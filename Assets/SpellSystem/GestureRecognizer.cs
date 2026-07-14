@@ -61,22 +61,39 @@ namespace SpellSystem
         public SpellSample matchedSample; // which specific sample scored best - useful for debugging/tuning
         public float score;       // 0..1, higher is better
         public bool successful;   // score >= bestMatch.minAccuracyToCast
+        public float rawDistance; // unscaled greedy-cloud-match distance - useful for calibrating the score formula
     }
 
     /// <summary>
-    /// Static implementation of the $P Point-Cloud gesture recognizer.
-    /// Reference: Vatavu, Anthony & Wobbrock, "Gestures as Point Clouds:
-    /// A $P Recognizer for User Interface Prototypes" (ICMI 2012).
+    /// Implementation of the $P Point-Cloud gesture recognizer, ported to
+    /// match the reference C# implementation by Vatavu, Anthony & Wobbrock
+    /// (the original "$P Point-Cloud Gesture Recognizer C# library").
+    /// Reference: Vatavu, R.-D., Anthony, L. and Wobbrock, J.O. (2012).
+    /// "Gestures as point clouds: A $P recognizer for user interface
+    /// prototypes." Proceedings of ICMI '12.
     ///
-    /// Works naturally with any number of strokes and does not care about
-    /// stroke order or drawing direction - which is what makes it a good
-    /// fit for multi-line spells drawn freehand with a mouse.
+    /// Ported (not copy-pasted) to work with Unity's Vector2 and this
+    /// project's SpellSample/StrokeData data model, but the normalization
+    /// pipeline and matching algorithm follow the reference exactly:
+    /// scale (shape-preserving) -> translate to centroid -> resample last,
+    /// as one continuous pass across all strokes using a per-point stroke
+    /// tag so the resample doesn't bridge a fake line between strokes.
     /// </summary>
     public static class GestureRecognizer
     {
-        // Number of points every gesture (candidate or template) is resampled to.
-        // Higher = more precise matching but slower. 32-64 is a good range.
+        // Number of points every gesture (candidate or sample) is resampled to.
         public const int ResamplePointCount = 32;
+
+        // A point tagged with which stroke it belongs to. Used internally
+        // during normalization so PathLength/Resample can skip the "gap"
+        // between the end of one stroke and the start of the next, exactly
+        // like the reference implementation's StrokeID field.
+        private struct TaggedPoint
+        {
+            public Vector2 Pos;
+            public int StrokeId;
+            public TaggedPoint(Vector2 pos, int strokeId) { Pos = pos; StrokeId = strokeId; }
+        }
 
         /// <summary>
         /// Call once per sample after loading (e.g. on game start) to
@@ -85,8 +102,8 @@ namespace SpellSystem
         /// </summary>
         public static void Prepare(SpellSample sample)
         {
-            var raw = FlattenStrokes(sample.strokes.Select(s => s.points).ToList());
-            sample.NormalizedCloud = Normalize(raw);
+            var rawStrokes = sample.strokes.Select(s => s.points).ToList();
+            sample.NormalizedCloud = Normalize(rawStrokes);
         }
 
         /// <summary>Prepares every sample belonging to a spell.</summary>
@@ -104,11 +121,9 @@ namespace SpellSystem
         /// </summary>
         public static RecognitionResult Recognize(List<List<Vector2>> drawnStrokes, IEnumerable<SpellDefinition> spells)
         {
-            var raw = FlattenStrokes(drawnStrokes);
-            if (raw.Count < 2)
+            var candidate = Normalize(drawnStrokes);
+            if (candidate.Count == 0)
                 return new RecognitionResult { bestMatch = null, matchedSample = null, score = 0f, successful = false };
-
-            var candidate = Normalize(raw);
 
             SpellDefinition best = null;
             SpellSample bestSample = null;
@@ -131,143 +146,119 @@ namespace SpellSystem
             }
 
             // Convert raw greedy-cloud distance into a friendlier 0..1 score.
-            // The divisor is a tunable "how far is a total miss" constant -
-            // start here and adjust based on playtesting with your actual shapes.
-            const float maxExpectedDistance = 0.35f;
-            float score = Mathf.Clamp01(1f - (bestDistance / maxExpectedDistance));
+            // CloudDistance SUMS weighted distances across all ResamplePointCount
+            // points rather than averaging them, so we divide by point count first
+            // to get a per-point average distance - a number that stays meaningful
+            // regardless of ResamplePointCount. maxExpectedAverageDistance is the
+            // tunable "how far off is a total miss" constant: start here and
+            // adjust based on the rawDistance/score values you see while
+            // playtesting with your actual drawn shapes.
+            float averageDistance = bestDistance / ResamplePointCount;
+            const float maxExpectedAverageDistance = 0.15f;
+            float score = Mathf.Clamp01(1f - (averageDistance / maxExpectedAverageDistance));
 
             return new RecognitionResult
             {
                 bestMatch = best,
                 matchedSample = bestSample,
                 score = score,
-                successful = best != null && score >= best.minAccuracyToCast
+                successful = best != null && score >= best.minAccuracyToCast,
+                rawDistance = bestDistance
             };
         }
 
-        // ---- Internals ----------------------------------------------------
+        // ---- Normalization pipeline (matches the reference implementation's order) ----
 
-        // Flattens multiple strokes into one ordered point list, splitting the
-        // fixed ResamplePointCount budget across strokes proportional to each
-        // stroke's share of total drawn length. This matters for multi-stroke
-        // spells: a long looping stroke shouldn't get the same weight as a
-        // short slash.
-        //
-        // IMPORTANT: the $P matching below requires every normalized cloud -
-        // candidate and every stored sample - to have exactly the same point
-        // count. Naively rounding each stroke's share independently can drift
-        // above or below the target total once more than one stroke is
-        // involved (e.g. 15+16 instead of 16+16), so this uses a
-        // largest-remainder apportionment to guarantee the sum is always
-        // exactly ResamplePointCount, no matter how many strokes there are.
-        private static List<Vector2> FlattenStrokes(List<List<Vector2>> strokes)
+        // Scale (shape-preserving) -> translate to centroid -> resample LAST,
+        // as one continuous pass over the raw high-density points. Resampling
+        // last (rather than per-stroke first, before normalizing) preserves
+        // much more shape detail and is what the reference implementation does.
+        private static List<Vector2> Normalize(List<List<Vector2>> strokes)
         {
-            var validStrokes = strokes.Where(s => s != null && s.Count > 0).ToList();
-            if (validStrokes.Count == 0) return new List<Vector2>();
+            var tagged = FlattenWithStrokeIds(strokes);
+            if (tagged.Count == 0) return new List<Vector2>();
 
-            int strokeCount = validStrokes.Count;
-            int[] counts = AllocatePointsPerStroke(validStrokes, strokeCount);
+            tagged = ScaleShapePreserving(tagged);
+            tagged = TranslateToCentroid(tagged);
+            return ResampleTagged(tagged, ResamplePointCount);
+        }
 
-            var result = new List<Vector2>();
-            for (int i = 0; i < strokeCount; i++)
-                result.AddRange(Resample(validStrokes[i], counts[i]));
+        private static List<TaggedPoint> FlattenWithStrokeIds(List<List<Vector2>> strokes)
+        {
+            var result = new List<TaggedPoint>();
+            if (strokes == null) return result;
 
+            for (int s = 0; s < strokes.Count; s++)
+            {
+                var stroke = strokes[s];
+                if (stroke == null) continue;
+                foreach (var p in stroke)
+                    result.Add(new TaggedPoint(p, s));
+            }
             return result;
         }
 
-        private static int[] AllocatePointsPerStroke(List<List<Vector2>> validStrokes, int strokeCount)
+        // Scales both axes by the SAME factor (max of width/height), unlike a
+        // naive fit-to-unit-box which would stretch x and y independently and
+        // distort the shape. This is the reference implementation's approach.
+        private static List<TaggedPoint> ScaleShapePreserving(List<TaggedPoint> points)
         {
-            const int minPerStroke = 1; // every stroke must be represented by at least one point
-            var counts = new int[strokeCount];
+            float minX = points.Min(p => p.Pos.x), maxX = points.Max(p => p.Pos.x);
+            float minY = points.Min(p => p.Pos.y), maxY = points.Max(p => p.Pos.y);
+            float scale = Mathf.Max(maxX - minX, maxY - minY);
+            if (scale <= Mathf.Epsilon) scale = 1f; // degenerate: a single point or a dot
 
-            if (strokeCount >= ResamplePointCount)
-            {
-                // Pathological case: more strokes than the point budget. Just
-                // give everyone the minimum; total may exceed the target
-                // slightly, but this only happens with an unreasonable number
-                // of strokes for a single gesture.
-                for (int i = 0; i < strokeCount; i++) counts[i] = minPerStroke;
-                return counts;
-            }
-
-            float[] lengths = validStrokes.Select(PathLength).ToArray();
-            float totalLength = lengths.Sum();
-
-            if (totalLength <= Mathf.Epsilon)
-            {
-                // No usable length info (e.g. every stroke is a single point) - split evenly.
-                int basePerStroke = ResamplePointCount / strokeCount;
-                int remainder = ResamplePointCount - basePerStroke * strokeCount;
-                for (int i = 0; i < strokeCount; i++)
-                    counts[i] = basePerStroke + (i < remainder ? 1 : 0);
-                return counts;
-            }
-
-            var fractional = new float[strokeCount];
-            int allocated = 0;
-            for (int i = 0; i < strokeCount; i++)
-            {
-                float share = ResamplePointCount * (lengths[i] / totalLength);
-                counts[i] = Mathf.Max(minPerStroke, Mathf.FloorToInt(share));
-                fractional[i] = share - Mathf.Floor(share);
-                allocated += counts[i];
-            }
-
-            // Distribute leftover/deficit points via largest-remainder order
-            // until the total exactly matches ResamplePointCount.
-            int diff = ResamplePointCount - allocated;
-            var order = Enumerable.Range(0, strokeCount).OrderByDescending(i => fractional[i]).ToArray();
-            int guard = 0;
-            int maxIterations = strokeCount * 10 + ResamplePointCount; // safety net against edge-case infinite loops
-            while (diff != 0 && guard < maxIterations)
-            {
-                int i = order[guard % strokeCount];
-                if (diff > 0)
-                {
-                    counts[i]++;
-                    diff--;
-                }
-                else if (counts[i] > minPerStroke)
-                {
-                    counts[i]--;
-                    diff++;
-                }
-                guard++;
-            }
-
-            return counts;
+            return points.Select(p => new TaggedPoint(
+                new Vector2((p.Pos.x - minX) / scale, (p.Pos.y - minY) / scale),
+                p.StrokeId
+            )).ToList();
         }
 
-        private static float PathLength(List<Vector2> pts)
+        private static List<TaggedPoint> TranslateToCentroid(List<TaggedPoint> points)
         {
-            float len = 0f;
-            for (int i = 1; i < pts.Count; i++)
-                len += Vector2.Distance(pts[i - 1], pts[i]);
-            return len;
+            Vector2 centroid = new Vector2(points.Average(p => p.Pos.x), points.Average(p => p.Pos.y));
+            return points.Select(p => new TaggedPoint(p.Pos - centroid, p.StrokeId)).ToList();
         }
 
-        private static List<Vector2> Resample(List<Vector2> points, int n)
+        // Resamples into exactly n equally-spaced points across the WHOLE
+        // gesture in one continuous pass, only accumulating distance between
+        // consecutive points that share the same StrokeId - so the resample
+        // never draws a phantom line bridging the gap between two strokes.
+        private static List<Vector2> ResampleTagged(List<TaggedPoint> points, int n)
         {
-            if (points.Count == 1) return Enumerable.Repeat(points[0], n).ToList();
+            var result = new List<Vector2> { points[0].Pos };
 
-            float interval = PathLength(points) / Mathf.Max(1, n - 1);
-            if (interval <= Mathf.Epsilon)
-                return Enumerable.Repeat(points[0], n).ToList();
+            float pathLength = PathLengthTagged(points);
+            if (pathLength <= Mathf.Epsilon)
+            {
+                // Degenerate: effectively a single point (e.g. a dot/click). Repeat it.
+                while (result.Count < n) result.Add(points[0].Pos);
+                return result;
+            }
 
-            var src = new List<Vector2>(points);
-            var resampled = new List<Vector2> { src[0] };
+            float interval = pathLength / (n - 1);
             float D = 0f;
 
-            for (int i = 1; i < src.Count; i++)
+            for (int i = 1; i < points.Count && result.Count < n; i++)
             {
-                float d = Vector2.Distance(src[i - 1], src[i]);
+                if (points[i].StrokeId != points[i - 1].StrokeId) continue; // skip the gap between strokes
+
+                float d = Vector2.Distance(points[i - 1].Pos, points[i].Pos);
                 if (D + d >= interval)
                 {
-                    float t = (interval - D) / d;
-                    Vector2 q = Vector2.Lerp(src[i - 1], src[i], t);
-                    resampled.Add(q);
-                    src.Insert(i, q);
-                    D = 0f;
+                    Vector2 firstPoint = points[i - 1].Pos;
+                    while (D + d >= interval && result.Count < n)
+                    {
+                        float t = Mathf.Clamp01((interval - D) / d);
+                        if (float.IsNaN(t)) t = 0.5f;
+                        Vector2 q = Vector2.Lerp(firstPoint, points[i].Pos, t);
+                        result.Add(q);
+
+                        d = D + d - interval;
+                        D = 0f;
+                        firstPoint = q;
+                    }
+                    D = d;
                 }
                 else
                 {
@@ -275,42 +266,34 @@ namespace SpellSystem
                 }
             }
 
-            // Rounding can leave us one point short/long - pad or trim.
-            while (resampled.Count < n) resampled.Add(src[src.Count - 1]);
-            if (resampled.Count > n) resampled.RemoveRange(n, resampled.Count - n);
+            // Rounding can occasionally leave the result a point short or, in
+            // rare multi-stroke edge cases, more than one short - pad with the
+            // final point so the count is always guaranteed to be exactly n.
+            while (result.Count < n) result.Add(points[points.Count - 1].Pos);
+            if (result.Count > n) result.RemoveRange(n, result.Count - n);
 
-            return resampled;
+            return result;
         }
 
-        // Scales the cloud to a unit bounding box (non-uniform) and
-        // translates it so its centroid sits at the origin. This removes
-        // sensitivity to where on the "page" the player drew and at what size.
-        private static List<Vector2> Normalize(List<Vector2> points)
+        private static float PathLengthTagged(List<TaggedPoint> points)
         {
-            float minX = points.Min(p => p.x), maxX = points.Max(p => p.x);
-            float minY = points.Min(p => p.y), maxY = points.Max(p => p.y);
-            float w = Mathf.Max(maxX - minX, 0.0001f);
-            float h = Mathf.Max(maxY - minY, 0.0001f);
-
-            var scaled = points.Select(p => new Vector2(
-                (p.x - minX) / w,
-                (p.y - minY) / h
-            )).ToList();
-
-            Vector2 centroid = new Vector2(scaled.Average(p => p.x), scaled.Average(p => p.y));
-            return scaled.Select(p => p - centroid).ToList();
+            float length = 0f;
+            for (int i = 1; i < points.Count; i++)
+                if (points[i].StrokeId == points[i - 1].StrokeId)
+                    length += Vector2.Distance(points[i - 1].Pos, points[i].Pos);
+            return length;
         }
 
-        // Greedy cloud matching: approximates the minimum-cost pairing between
-        // two point clouds without the full combinatorial cost of an exact
-        // solution. Tries several rotational starting offsets and keeps the best.
+        // ---- Matching (greedy cloud matching, same as reference) ----
+
         private static float GreedyCloudMatch(List<Vector2> points1, List<Vector2> points2)
         {
             if (points1.Count != points2.Count)
             {
-                // Should never happen after the FlattenStrokes fix, but fail safely
-                // rather than index out of range if it ever does (e.g. a
-                // hand-edited or corrupted sample file).
+                // Should never happen now that both clouds always resample to
+                // exactly ResamplePointCount, but fail safely rather than
+                // index out of range if it ever does (e.g. a hand-edited or
+                // corrupted sample file).
                 Debug.LogWarning($"Point cloud size mismatch ({points1.Count} vs {points2.Count}) - skipping this comparison.");
                 return float.MaxValue;
             }

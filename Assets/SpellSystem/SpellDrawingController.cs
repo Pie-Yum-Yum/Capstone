@@ -171,6 +171,12 @@ namespace SpellSystem
                       $"known: {knownSpells.Count} spell(s), {totalKnownSamples} sample(s) total");
 
             var result = GestureRecognizer.Recognize(gestureStrokes, knownSpells);
+
+            // TEMP DIAGNOSTIC - remove once casting is confirmed working.
+            string matchName = result.bestMatch != null ? result.bestMatch.spellName : "none";
+            Debug.Log($"[Cast result] match: {matchName} | score: {result.score:P1} | " +
+                      $"rawDistance: {result.rawDistance:F4} | successful: {result.successful}");
+
             OnSpellCastAttempt?.Invoke(result);
         }
 
