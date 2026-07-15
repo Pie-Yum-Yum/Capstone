@@ -113,6 +113,17 @@ namespace SpellSystem
                 if (sample.NormalizedCloud == null) Prepare(sample);
         }
 
+        // Point-cloud matching alone treats a gesture as an unordered set of
+        // points, which deliberately ignores stroke count/topology. That's
+        // normally useful (it's forgiving about draw order), but it also
+        // means two genuinely different shapes with similar "ink coverage"
+        // in their bounding box (e.g. a spiral vs. a multi-line shape) can
+        // end up geometrically closer than expected. Penalizing a stroke
+        // count mismatch adds back a cheap, strong signal that pure
+        // point-cloud distance throws away, and meaningfully widens the gap
+        // between real matches and coincidentally-similar wrong shapes.
+        private const float StrokeCountMismatchPenalty = 0.05f; // added to average per-point distance, per extra/missing stroke
+
         /// <summary>
         /// Recognize a freshly-drawn gesture (list of strokes, each a list of
         /// points in the same local space the samples were authored in)
@@ -125,6 +136,8 @@ namespace SpellSystem
             if (candidate.Count == 0)
                 return new RecognitionResult { bestMatch = null, matchedSample = null, score = 0f, successful = false };
 
+            int drawnStrokeCount = drawnStrokes?.Count(s => s != null && s.Count > 0) ?? 0;
+
             SpellDefinition best = null;
             SpellSample bestSample = null;
             float bestDistance = float.MaxValue;
@@ -135,10 +148,18 @@ namespace SpellSystem
                 {
                     if (sample.NormalizedCloud == null) Prepare(sample);
 
-                    float distance = GreedyCloudMatch(candidate, sample.NormalizedCloud);
-                    if (distance < bestDistance)
+                    float rawDistance = GreedyCloudMatch(candidate, sample.NormalizedCloud);
+
+                    // Penalize stroke-count mismatches. Penalty is scaled by
+                    // ResamplePointCount so it's expressed in the same
+                    // "summed distance" units as rawDistance, since both get
+                    // divided by ResamplePointCount together below.
+                    int strokeDiff = Mathf.Abs(drawnStrokeCount - sample.strokes.Count);
+                    float adjustedDistance = rawDistance + (strokeDiff * StrokeCountMismatchPenalty * ResamplePointCount);
+
+                    if (adjustedDistance < bestDistance)
                     {
-                        bestDistance = distance;
+                        bestDistance = adjustedDistance;
                         best = spell;
                         bestSample = sample;
                     }

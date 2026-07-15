@@ -12,6 +12,7 @@ public class PlayerCam : MonoBehaviour
     float xRotation;
     float yRotation;
     bool paused;
+    public Animator animator;
 
 
 
@@ -28,9 +29,12 @@ public class PlayerCam : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Escape)){
             paused = !paused;
             if(paused){
+                animator.SetTrigger("Trigger1");
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+                
             }else{
+                animator.SetTrigger("Trigger2");
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
