@@ -11,7 +11,7 @@ public class PlayerCam : MonoBehaviour
 
     float xRotation;
     float yRotation;
-    bool paused;
+    public bool paused;
     public Animator animator;
 
 

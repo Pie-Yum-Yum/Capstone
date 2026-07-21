@@ -50,8 +50,9 @@ namespace SpellSystem
         // and no effectId, so add an entry once you're ready to wire gameplay.
         private static readonly List<SpellMetadata> Metadata = new List<SpellMetadata>
         {
-            new SpellMetadata { spellName = "Hourglass", minAccuracyToCast = 0.7f, effectId = "hourglass_effect" },
-            // new SpellMetadata { spellName = "Fireball", minAccuracyToCast = 0.65f, effectId = "fireball_effect" },
+            new SpellMetadata { spellName = "Hourglass", minAccuracyToCast = 0.7f, effectId = "Hourglass" },
+            new SpellMetadata { spellName = "Crate", minAccuracyToCast = 0.7f, effectId = "Crate" },
+            new SpellMetadata { spellName = "Lock", minAccuracyToCast = 0.7f, effectId = "Lock" },
         };
 
         public static List<SpellDefinition> BuildKnownSpells()
