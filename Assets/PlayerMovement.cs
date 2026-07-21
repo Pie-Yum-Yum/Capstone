@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     
     float horizontalInput;
     float verticalInput;
+    public bool allowMovement = true;
 
     Vector3 moveDirection;
     Rigidbody rb;
@@ -39,7 +40,9 @@ public class PlayerMovement : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        movePlayer();
+        if(allowMovement){
+            movePlayer();
+        }
     }
 
     private void movePlayer(){

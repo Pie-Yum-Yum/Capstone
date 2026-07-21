@@ -342,11 +342,11 @@ Transform:
   m_GameObject: {fileID: 38553452}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710677, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 4.262, y: 1.93, z: 14.6792}
+  m_LocalPosition: {x: 5.08781, y: 1.93, z: 12.88899}
   m_LocalScale: {x: 9.298793, y: 4.1234, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!4 &48654613 stripped
 Transform:
@@ -473,12 +473,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 108057686}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.86, y: 1.93, z: 10.21}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.03419, y: 1.93, z: 8.41979}
   m_LocalScale: {x: 6.2216, y: 4.1234, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &115301977 stripped
 Transform:
@@ -748,12 +748,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 216414912}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.8507, y: 1.93, z: 10.21}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.67651, y: 1.93, z: 8.41979}
   m_LocalScale: {x: 5.840216, y: 4.1234, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &217492941
 GameObject:
@@ -906,12 +906,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 276726873}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.2341, y: 1.6153, z: 19.14}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.4082901, y: 1.6153, z: 17.349789}
   m_LocalScale: {x: 3.0950456, y: 4.7530766, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &335084216 stripped
 Transform:
@@ -1406,12 +1406,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 665309039}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.2341, y: 3.5208, z: 10.21}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.4082901, y: 3.5208, z: 8.41979}
   m_LocalScale: {x: 3.0950456, y: 0.94194937, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &681402471
 GameObject:
@@ -1535,7 +1535,6 @@ GameObject:
   - component: {fileID: 758339643}
   - component: {fileID: 758339642}
   - component: {fileID: 758339646}
-  - component: {fileID: 758339647}
   m_Layer: 0
   m_Name: PlayerCam
   m_TagString: MainCamera
@@ -1680,40 +1679,6 @@ MonoBehaviour:
   orientation: {fileID: 997325331}
   paused: 0
   animator: {fileID: 1585327362}
---- !u!114 &758339647
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 758339641}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2704c9e5311c3324c81a0fac81172d30, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpellSystem.SpellEffectManager
-  drawingController: {fileID: 681402475}
-  castOrigin: {fileID: 758339645}
-  effects:
-  - effectId: Lock
-    onCast:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1402243269}
-          m_TargetAssemblyTypeName: SpellSystem.SpellCaster, Assembly-CSharp
-          m_MethodName: CastLockSpell
-          m_Mode: 0
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  onFizzle:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &789764537
 GameObject:
   m_ObjectHideFlags: 0
@@ -2735,12 +2700,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1361949328}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.86, y: 1.93, z: 19.14}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.03419, y: 1.93, z: 17.349789}
   m_LocalScale: {x: 6.2216, y: 4.1234, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1402243267
 GameObject:
@@ -2752,6 +2717,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1402243268}
   - component: {fileID: 1402243269}
+  - component: {fileID: 1402243270}
   m_Layer: 0
   m_Name: SpellCaster
   m_TagString: Untagged
@@ -2788,7 +2754,59 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpellSystem.SpellCaster
   SpellDrawingController: {fileID: 681402475}
   animator: {fileID: 1585327362}
-  playerCam: {fileID: 758339646}
+  PlayerCam: {fileID: 758339646}
+  playerMovement: {fileID: 1451024076}
+  EyeTint: {fileID: 2123201213}
+--- !u!114 &1402243270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1402243267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2704c9e5311c3324c81a0fac81172d30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpellSystem.SpellEffectManager
+  drawingController: {fileID: 681402475}
+  castOrigin: {fileID: 758339645}
+  effects:
+  - effectId: Lock
+    onCast:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1402243269}
+          m_TargetAssemblyTypeName: SpellSystem.SpellCaster, Assembly-CSharp
+          m_MethodName: CastLockSpell
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - effectId: Eye
+    onCast:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1402243269}
+          m_TargetAssemblyTypeName: SpellSystem.SpellCaster, Assembly-CSharp
+          m_MethodName: CastEyeSpell
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  onFizzle:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1421372735 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1313734983093383116, guid: f0d18f9006d2847489bfd90b445c78df, type: 3}
@@ -2965,6 +2983,7 @@ MonoBehaviour:
   CameraPos: {fileID: 217492941}
   drag: 5
   oreintation: {fileID: 997325331}
+  allowMovement: 1
 --- !u!4 &1457709747 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3642014275595673399, guid: f0d18f9006d2847489bfd90b445c78df, type: 3}
@@ -3317,11 +3336,11 @@ Transform:
   m_GameObject: {fileID: 1727286183}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710677, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -9.47, y: 1.93, z: 14.68}
+  m_LocalPosition: {x: -8.64419, y: 1.93, z: 12.889791}
   m_LocalScale: {x: 9.298793, y: 4.1234, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!4 &1748582542 stripped
 Transform:
@@ -3434,6 +3453,7 @@ RectTransform:
   - {fileID: 1125730408}
   - {fileID: 212267217}
   - {fileID: 981701738}
+  - {fileID: 2123201214}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4105,7 +4125,15 @@ Transform:
   m_LocalPosition: {x: -0.82581, y: -0, z: 1.79021}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 108057690}
+  - {fileID: 216414916}
+  - {fileID: 38553456}
+  - {fileID: 1727286187}
+  - {fileID: 665309043}
+  - {fileID: 1361949332}
+  - {fileID: 2088099075}
+  - {fileID: 276726877}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2088099071
@@ -4213,12 +4241,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2088099071}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.8507, y: 1.93, z: 19.14}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.67651, y: 1.93, z: 17.349789}
   m_LocalScale: {x: 5.840216, y: 4.1234, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2058888732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &2096138689 stripped
 Transform:
@@ -4230,6 +4258,81 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6345458528989350473, guid: f0d18f9006d2847489bfd90b445c78df, type: 3}
   m_PrefabInstance: {fileID: 1789799574}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2123201213
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2123201214}
+  - component: {fileID: 2123201216}
+  - component: {fileID: 2123201215}
+  m_Layer: 5
+  m_Name: EyeTint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2123201214
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123201213}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1772340802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2123201215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123201213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.95448035, b: 0.33490568, a: 0.24705882}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2123201216
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123201213}
+  m_CullTransparentMesh: 1
 --- !u!4 &2140705120 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3798425998677668069, guid: f0d18f9006d2847489bfd90b445c78df, type: 3}
@@ -4251,12 +4354,4 @@ SceneRoots:
   - {fileID: 1772340802}
   - {fileID: 789764540}
   - {fileID: 2058888732}
-  - {fileID: 108057690}
-  - {fileID: 216414916}
-  - {fileID: 38553456}
-  - {fileID: 1727286187}
-  - {fileID: 665309043}
-  - {fileID: 1361949332}
-  - {fileID: 2088099075}
-  - {fileID: 276726877}
   - {fileID: 390310893}

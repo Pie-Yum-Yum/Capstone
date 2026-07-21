@@ -8,7 +8,9 @@ namespace SpellSystem
         private SpellCastContext context;
         private string PrimedSpell = null;
         public Animator animator;
-        public PlayerCam playerCam;
+        public PlayerCam PlayerCam;
+        public PlayerMovement playerMovement;
+        public GameObject EyeTint;
 
         private door currentHighlightedDoor;
 
@@ -17,13 +19,22 @@ namespace SpellSystem
             context = incomingContext;
             PrimedSpell = "Lock";
             animator.SetTrigger("Trigger2");
-            playerCam.paused = false;
+            PlayerCam.paused = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+        public void CastEyeSpell(SpellCastContext incomingContext)
+        {
+            context = incomingContext;
+            PrimedSpell = "Eye";
+            animator.SetTrigger("Trigger2");
         }
 
         void Update()
         {
+            // HEY 
+            // whem adding new spells, add a new case here and make sure to set PrimedSpell to the name of the spell in the CastSpell function above
+            // also add an entry in the spell database for the new spell and ALSO call it in the editor from the SpellCaster GameObject!!!!
             switch (PrimedSpell)
             {
                 case "Lock":
@@ -74,7 +85,39 @@ namespace SpellSystem
                     }
 
                     break;
+                case "Eye":
+                    SpellDrawingController.ClearPage();
+                    PrimedSpell = null;
+                    // psudo code for eye spell
+
+                    // animation -- cover eyes / close eyes
+                    // move player cam up
+                    // tint screen yellow
+                    // after 5 seconds, remove tint and move cam back down
+
+                    // stop all other player movement and actions for 5 seconds and allow the player to look all around (unclamp the camera from the 90*)
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                    PlayerCam.paused = false;
+                    playerMovement.allowMovement = false;
+                    
+
+                    PlayerCam.transform.position += new Vector3(0, 5, 0);
+                    EyeTint.SetActive(true);
+                    
+                    // wait 5 seconds
+                    Invoke("EndEye", 5f);
+
+
+                    break;
             }
+        }
+        private void EndEye()
+        {
+            EyeTint.SetActive(false);
+            PlayerCam.transform.position -= new Vector3(0, 5, 0);
+            playerMovement.allowMovement = true;
+            
         }
     }
 }
