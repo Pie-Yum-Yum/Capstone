@@ -26,7 +26,7 @@ public class door : MonoBehaviour
     public bool lookingAtDoor = false;
     private bool isMoving;
     public GameObject lockObject;
-    private bool isLocked;
+    public bool isLocked;
 
     private MaterialPropertyBlock propertyBlock;
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
@@ -166,7 +166,7 @@ public class door : MonoBehaviour
         isMoving = true;
     }
 
-    public void lockDoor()
+    public void lockDoor() // door lock for the lock spell !!
     {
         Debug.Log($"Locking the door: {gameObject.name}");
         if (lockObject == null) return;

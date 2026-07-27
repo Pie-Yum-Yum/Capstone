@@ -54,6 +54,7 @@ namespace SpellSystem
             new SpellMetadata { spellName = "Crate", minAccuracyToCast = 0.7f, effectId = "Crate" },
             new SpellMetadata { spellName = "Lock", minAccuracyToCast = 0.7f, effectId = "Lock" },
             new SpellMetadata { spellName = "Eye", minAccuracyToCast = 0.7f, effectId = "Eye" },
+            new SpellMetadata { spellName = "Fireball", minAccuracyToCast = 0.7f, effectId = "Fireball" },
         };
 
         public static List<SpellDefinition> BuildKnownSpells()

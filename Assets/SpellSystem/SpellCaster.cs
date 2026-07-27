@@ -29,6 +29,16 @@ namespace SpellSystem
             PrimedSpell = "Eye";
             animator.SetTrigger("Trigger2");
         }
+        public void CastFireballSpell(SpellCastContext incomingContext)
+        {
+            context = incomingContext;
+            PrimedSpell = "Fireball";
+            animator.SetTrigger("Trigger2");
+            PlayerCam.paused = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        
 
         void Update()
         {
@@ -75,6 +85,7 @@ namespace SpellSystem
                             currentHighlightedDoor.SetSpellHighlight(false, Color.black);
                             currentHighlightedDoor = null;
                         }
+                        
                     }
 
                     if (newDoor == null && currentHighlightedDoor != null)
@@ -83,6 +94,10 @@ namespace SpellSystem
                         currentHighlightedDoor.lookingAtDoor = false;
                         currentHighlightedDoor = null;
                     }
+                    if (Input.GetMouseButtonDown(1))
+                    {
+                        PrimedSpell = null;
+                    } 
 
                     break;
                 case "Eye":
@@ -107,6 +122,35 @@ namespace SpellSystem
                     
                     // wait 5 seconds
                     Invoke("EndEye", 5f);
+
+
+                    break;
+                case "Fireball":
+                    SpellDrawingController.ClearPage();
+                    //PrimedSpell = null;
+                    // psudo code for fireball spell
+
+                    // animation -- hand goes out and fireball is cast
+
+                    // features
+                    // fireball is a projectile that can be aimed and will explode on impact with an object or enemy
+                    // prime on cast and throw on left click
+                    // destroyed on impact with an object or after 15 seconds
+                    // if it hits an object with the "WoodBaracade" tag, it will light the object on fire and destroy it after 3 seconds
+
+                    if (Input.GetMouseButtonDown(0))
+                        {
+                            GameObject fireball = Instantiate(Resources.Load("Fireball") as GameObject, context.castOrigin.position + context.castOrigin.forward * 2, Quaternion.identity);
+                            fireball.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 100f);
+                            PrimedSpell = null;
+                        }
+                    if (Input.GetMouseButtonDown(1))
+                    {
+                        PrimedSpell = null;
+                    }               
+
+                    
+
 
 
                     break;
