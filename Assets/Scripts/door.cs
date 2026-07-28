@@ -43,7 +43,7 @@ public class door : MonoBehaviour
         targetRotation = closedRotation;
 
         propertyBlock = new MaterialPropertyBlock();
-        isLocked = false;
+        //isLocked = false;
 
         if (doorRenderer != null && doorRenderer.sharedMaterial != null)
         {

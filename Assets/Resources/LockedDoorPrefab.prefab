@@ -123,6 +123,7 @@ GameObject:
   - component: {fileID: 3957208832712504345}
   - component: {fileID: 3687052468957407928}
   - component: {fileID: 7550248139496788627}
+  - component: {fileID: 3100522375327113336}
   m_Layer: 0
   m_Name: Plank (5)
   m_TagString: Untagged
@@ -178,7 +179,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bb595ff0ca49a234d877005b07fcd418, type: 2}
+  - {fileID: 2100000, guid: cda83a75f8e91d948b41b1d734bd55fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -202,6 +203,21 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3100522375327113336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 965220521631107178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  objectHeight: 1
+  dissolveDuration: 1.5
 --- !u!1 &1076674978597838815
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,6 +229,7 @@ GameObject:
   - component: {fileID: 3589090969524365156}
   - component: {fileID: 1659976598252847154}
   - component: {fileID: 2003415204017696601}
+  - component: {fileID: 2881182507752022639}
   m_Layer: 0
   m_Name: Plank (1)
   m_TagString: Untagged
@@ -268,7 +285,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bb595ff0ca49a234d877005b07fcd418, type: 2}
+  - {fileID: 2100000, guid: cda83a75f8e91d948b41b1d734bd55fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -292,6 +309,21 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2881182507752022639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1076674978597838815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  objectHeight: 1
+  dissolveDuration: 1.5
 --- !u!1 &2998557479287673394
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,6 +335,7 @@ GameObject:
   - component: {fileID: 1787482477849059376}
   - component: {fileID: 1697886481020146624}
   - component: {fileID: 5895077234571002795}
+  - component: {fileID: 1087126447678975952}
   m_Layer: 0
   m_Name: Plank (2)
   m_TagString: Untagged
@@ -358,7 +391,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bb595ff0ca49a234d877005b07fcd418, type: 2}
+  - {fileID: 2100000, guid: cda83a75f8e91d948b41b1d734bd55fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -382,6 +415,21 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1087126447678975952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2998557479287673394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  objectHeight: 1
+  dissolveDuration: 1.5
 --- !u!1 &3269401912760678464
 GameObject:
   m_ObjectHideFlags: 0
@@ -718,6 +766,7 @@ GameObject:
   - component: {fileID: 1615648319899275726}
   - component: {fileID: 8555122937917475662}
   - component: {fileID: 7313922815236946067}
+  - component: {fileID: 7196397291350111887}
   m_Layer: 0
   m_Name: Plank (4)
   m_TagString: Untagged
@@ -773,7 +822,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bb595ff0ca49a234d877005b07fcd418, type: 2}
+  - {fileID: 2100000, guid: cda83a75f8e91d948b41b1d734bd55fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -797,6 +846,21 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7196397291350111887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8396942867733976747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  objectHeight: 1
+  dissolveDuration: 1.5
 --- !u!1 &9027907597968073882
 GameObject:
   m_ObjectHideFlags: 0
@@ -808,6 +872,7 @@ GameObject:
   - component: {fileID: 5485822711437986052}
   - component: {fileID: 5864073432873085493}
   - component: {fileID: 1126156564143571380}
+  - component: {fileID: 7145215129328391378}
   m_Layer: 0
   m_Name: Plank (3)
   m_TagString: Untagged
@@ -863,7 +928,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bb595ff0ca49a234d877005b07fcd418, type: 2}
+  - {fileID: 2100000, guid: cda83a75f8e91d948b41b1d734bd55fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -887,3 +952,18 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7145215129328391378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9027907597968073882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  objectHeight: 1
+  dissolveDuration: 1.5
