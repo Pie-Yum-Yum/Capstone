@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class door : MonoBehaviour
 {
@@ -173,6 +174,7 @@ public class door : MonoBehaviour
         isLocked = true;
 
         lockObject.SetActive(true);
+        GetComponent<NavMeshObstacle>().enabled = true;
         StartCoroutine(UnlockAfterDelay(10f));
     }
 
@@ -184,5 +186,7 @@ public class door : MonoBehaviour
             lockObject.SetActive(false);
         }
         isLocked = false;
+        
+        GetComponent<NavMeshObstacle>().enabled = false;
     }
 }

@@ -2,31 +2,12 @@ using UnityEngine;
 
 public class Fireball : MonoBehaviour
 {
-    [SerializeField] private float flammableDestroyDelay = 3f;
+    //[SerializeField] private float flammableDestroyDelay = 3f;
 
     private void OnCollisionEnter(Collision collision)
     {
         HandleHit(collision.collider.gameObject);
     }
-    // private void Awake()
-    // {
-    //     Door.GetComponent<door>().isLocked = true;
-    // }
-
-    // private void OnTriggerEnter(Collider other)
-    // {
-    //     HandleHit(other.gameObject);
-    // }
-
-    // private void OnCollisionEnter2D(Collision2D collision)
-    // {
-    //     HandleHit(collision.collider.gameObject);
-    // }
-
-    // private void OnTriggerEnter2D(Collider2D other)
-    // {
-    //     HandleHit(other.gameObject);
-    // }
 
     private void HandleHit(GameObject target)
     {
@@ -49,7 +30,7 @@ public class Fireball : MonoBehaviour
             {
                 parentDissolve.TriggerDissolve();
             }
-            Destroy(target, flammableDestroyDelay);
+            //Destroy(target, flammableDestroyDelay);
         }
         else
         {

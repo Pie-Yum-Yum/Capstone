@@ -10,6 +10,7 @@ public class DissolveObject : MonoBehaviour
     private Material material;
     private Renderer objectRenderer;
     private bool isDissolving = false;
+    public GameObject ParentObject;
 
     private void Awake()
     {
@@ -18,7 +19,7 @@ public class DissolveObject : MonoBehaviour
         material.SetFloat("_NoiseStrength", noiseStrength);
 
         // Cutoff above the object's actual world-space top = fully solid/visible
-        SetHeight(GetTopHeight());
+        SetHeight(GetTopHeight()+2f);
     }
 
     private float GetTopHeight()
@@ -49,25 +50,13 @@ public class DissolveObject : MonoBehaviour
         }
 
         SetHeight(endHeight);
-        // Optional: gameObject.SetActive(false); or Destroy(gameObject, 0.1f);
+        // Optional: gameObject.SetActive(false); or 
+        if(ParentObject != null)
+        {
+            Destroy(ParentObject, 0.1f);
+        }
+        Destroy(gameObject, 0.1f);
     }
-
-    // private void OnTriggerEnter(Collider other)
-    // {
-    //     if (other.CompareTag("Fireball"))
-    //     {
-    //         TriggerDissolve();
-    //     }
-    // }
-
-    // Use OnCollisionEnter instead if the fireball has a non-trigger collider/rigidbody
-    // private void OnCollisionEnter(Collision collision)
-    // {
-    //     if (collision.collider.CompareTag("Fireball"))
-    //     {
-    //         TriggerDissolve();
-    //     }
-    // }
 
     public void TriggerDissolve()
     {

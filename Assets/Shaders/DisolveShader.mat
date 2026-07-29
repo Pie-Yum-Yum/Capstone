@@ -51,6 +51,8 @@ Material:
     m_Colors:
     - _Albedo: {r: 0.6037736, g: 0.3683112, b: 0.16803133, a: 0}
     - _EdgeColor: {r: 2.488598, g: 0.5701142, b: 0.1799927, a: 1}
+    - _Offset: {r: 1, g: 1, b: 0, a: 0}
+    - _Tiling: {r: 2.5, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &6415026639410320554

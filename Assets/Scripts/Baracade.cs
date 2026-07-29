@@ -9,19 +9,19 @@ public class Baracade : MonoBehaviour
         if(Door != null)
         {
             Door.GetComponent<door>().isLocked = true;
-            Debug.Log("Door is locked");
+            //Debug.Log("Door is locked");
         }
     }
 
     void OnCollisionEnter(Collision other)
     {
-        Debug.Log("Collision Entered");
+        //Debug.Log("Collision Entered");
         if (other.gameObject.CompareTag("Fireball"))
         {
             if(Door != null)
         {
             Door.GetComponent<door>().isLocked = false;
-            Debug.Log("Door is unlocked");
+            //Debug.Log("Door is unlocked");
         }
         }
     }
