@@ -12,6 +12,7 @@ public class PlayerSoundEmitter : MonoBehaviour
 
     [Header("Walking")]
     public float walkSoundRadius = 5f;
+
     public float walkSoundLifetime = 2f;
 
     [Header("Running")]
@@ -19,6 +20,12 @@ public class PlayerSoundEmitter : MonoBehaviour
     public float runSpeedThreshold = 4f;
     public float runSoundRadius = 10f;
     public float runSoundLifetime = 2.5f;
+    [Header("Crouching")]
+    [Tooltip("Speed (units/sec) below which movement counts as 'crouching' and makes a quieter sound.")]
+    public float crouchSoundLifetime = 1.5f;
+    public float crouchSpeedThreshold = 1.5f;
+
+    public float crouchSoundRadius = 2f;
 
     private Vector3 lastEmitPosition;
     private float lastEmitTime;
@@ -37,9 +44,10 @@ public class PlayerSoundEmitter : MonoBehaviour
         {
             float speed = distanceMoved / Mathf.Max(Time.time - lastEmitTime, 0.0001f);
             bool isRunning = speed >= runSpeedThreshold;
+            bool isCrouching = speed <= crouchSpeedThreshold;
 
-            float radius = isRunning ? runSoundRadius : walkSoundRadius;
-            float lifetime = isRunning ? runSoundLifetime : walkSoundLifetime;
+            float radius = isRunning ? runSoundRadius : (isCrouching ? crouchSoundRadius : walkSoundRadius);
+            float lifetime = isRunning ? runSoundLifetime : (isCrouching ? crouchSoundLifetime : walkSoundLifetime);
 
             SoundManager.Instance?.EmitSound(transform.position, radius, lifetime);
 

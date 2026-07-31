@@ -7,6 +7,7 @@ TagManager:
   - Door
   - Flammable
   - Fireball
+  - HidingSpot
   layers:
   - Default
   - TransparentFX

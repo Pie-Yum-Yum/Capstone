@@ -38,6 +38,16 @@ namespace SpellSystem
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+
+        public void CastNoiseSpell(SpellCastContext incomingContext)
+        {
+            context = incomingContext;
+            PrimedSpell = "Noise";
+            animator.SetTrigger("Trigger2");
+            PlayerCam.paused = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
         
 
         void Update()
@@ -154,6 +164,22 @@ namespace SpellSystem
 
 
                     break;
+                case "Noise":
+                    SpellDrawingController.ClearPage();
+                    //PrimedSpell = null;
+
+                    if (Input.GetMouseButtonDown(0))
+                        {
+                            GameObject Lure = Instantiate(Resources.Load("Lure") as GameObject, context.castOrigin.position + context.castOrigin.forward * 2, Quaternion.identity);
+                            Lure.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 100f);
+                            PrimedSpell = null;
+                        }
+                    if (Input.GetMouseButtonDown(1))
+                    {
+                        PrimedSpell = null;
+                    }    
+
+                break;
             }
         }
         private void EndEye()

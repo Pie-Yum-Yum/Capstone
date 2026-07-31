@@ -13,6 +13,8 @@ public class MonsterAI : MonoBehaviour
     [Tooltip("Optional. Animator to drive with Speed (float), IsChasing (bool), IsSearching (bool), Attack (trigger).")]
     public Animator animator;
 
+    public PlayerMovement playerMovement; // Reference to the PlayerMovement script
+
     [Header("State (read-only at runtime)")]
     [SerializeField] private State currentState = State.Patrol;
     public State CurrentState => currentState;
@@ -115,7 +117,7 @@ public class MonsterAI : MonoBehaviour
     {
         if (player == null) return;
 
-        bool playerDetected = CheckProximity() || CheckVisionCone();
+        bool playerDetected = CheckProximity() || CheckVisionCone() && !playerMovement.hidingSpot;
 
         if (playerDetected)
         {
@@ -302,7 +304,7 @@ public class MonsterAI : MonoBehaviour
     protected virtual void OnPlayerCaught()
     {
         // Hook this up to your game-over / damage logic.
-        if (animator != null) animator.SetTrigger("Attack");
+        // if (animator != null) animator.SetTrigger("Attack");
         Debug.Log("Monster caught the player.");
     }
 
