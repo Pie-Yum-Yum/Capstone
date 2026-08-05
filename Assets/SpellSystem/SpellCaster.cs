@@ -171,7 +171,7 @@ namespace SpellSystem
                     if (Input.GetMouseButtonDown(0))
                         {
                             GameObject Lure = Instantiate(Resources.Load("Lure") as GameObject, context.castOrigin.position + context.castOrigin.forward * 2, Quaternion.identity);
-                            Lure.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 100f);
+                            Lure.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 300f);
                             PrimedSpell = null;
                         }
                     if (Input.GetMouseButtonDown(1))

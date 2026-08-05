@@ -86,16 +86,22 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
     }
 
-    private void OnTriggerEnter(Collider other){
-        if(other.CompareTag("HidingSpot")){
-            isCrouching = true;
-            hidingSpot = true;
-        }
-    }
+    // private void OnTriggerEnter(Collider other){
+    //     if(other.CompareTag("HidingSpot")){
+    //         isCrouching = true;
+    //         hidingSpot = true;
+    //     }
+    // }
     private void OnTriggerExit(Collider other){
         if(other.CompareTag("HidingSpot")){
             isCrouching = false;
             hidingSpot = false;
+        }
+    }
+    private void OnTriggerStay(Collider other){
+        if(other.CompareTag("HidingSpot")){
+            isCrouching = true;
+            hidingSpot = true;
         }
     }
 }

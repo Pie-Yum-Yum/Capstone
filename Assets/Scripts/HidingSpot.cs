@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class HidingSpot : MonoBehaviour
 {
-    public GameObject Table;
+    public GameObject Top;
 
     // Update is called once per frame
     void Update()
@@ -11,12 +11,12 @@ public class HidingSpot : MonoBehaviour
     }
     void OnTriggerEnter(Collider other){
         if(other.CompareTag("Player")){
-            Table.GetComponent<BoxCollider>().enabled = false;
+            Top.GetComponent<BoxCollider>().enabled = false;
         }
     }
     void OnTriggerExit(Collider other){
         if(other.CompareTag("Player")){
-            Table.GetComponent<BoxCollider>().enabled = true;
+            Top.GetComponent<BoxCollider>().enabled = true;
         }
     }
 }

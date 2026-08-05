@@ -66,7 +66,7 @@ namespace SpellSystem
         {
             if (drawingController == null)
             {
-                Debug.LogWarning("SpellEffectManager has no SpellDrawingController assigned - it won't receive any cast attempts.");
+                //Debug.LogWarning("SpellEffectManager has no SpellDrawingController assigned - it won't receive any cast attempts.");
                 return;
             }
             drawingController.OnSpellCastAttempt += HandleCastAttempt;

@@ -41,6 +41,10 @@ namespace SpellSystem
 
         public System.Action<RecognitionResult> OnSpellCastAttempt;
 
+        [Header("Spell Unlock List")]
+        [Tooltip("A list of all spells that have been unlocked by the player.")]
+        private HashSet<string> unlockedSpells = new HashSet<string>();
+
         /// <summary>
         /// Re-scans Resources/SpellSamples and rebuilds the known spell list.
         /// Useful during development: after exporting a new sample mid-Play-session,
@@ -49,6 +53,11 @@ namespace SpellSystem
         /// the context menu, or call it from your own debug UI/hotkey.
         /// </summary>
         [ContextMenu("Reload Known Spells")]
+
+        public void UnlockSpell(string spellName)
+        {
+            unlockedSpells.Add(spellName);
+        }
         public void ReloadKnownSpells()
         {
             knownSpells = SpellDatabase.BuildKnownSpells();
@@ -167,17 +176,23 @@ namespace SpellSystem
             // TEMP DIAGNOSTIC - remove once casting is confirmed working.
             int totalPoints = gestureStrokes.Sum(s => s.Count);
             int totalKnownSamples = knownSpells.Sum(sp => sp.samples.Count);
-            Debug.Log($"[Cast attempt] drawn: {gestureStrokes.Count} stroke(s), {totalPoints} point(s) | " +
-                      $"known: {knownSpells.Count} spell(s), {totalKnownSamples} sample(s) total");
+            //Debug.Log($"[Cast attempt] drawn: {gestureStrokes.Count} stroke(s), {totalPoints} point(s) | " +
+            //          $"known: {knownSpells.Count} spell(s), {totalKnownSamples} sample(s) total");
 
             var result = GestureRecognizer.Recognize(gestureStrokes, knownSpells);
 
             // TEMP DIAGNOSTIC - remove once casting is confirmed working.
             string matchName = result.bestMatch != null ? result.bestMatch.spellName : "none";
-            Debug.Log($"[Cast result] match: {matchName} | score: {result.score:P1} | " +
-                      $"rawDistance: {result.rawDistance:F4} | successful: {result.successful}");
+            //Debug.Log($"[Cast result] match: {matchName} | score: {result.score:P1} | " +
+            //          $"rawDistance: {result.rawDistance:F4} | successful: {result.successful}");
+            if(!unlockedSpells.Contains(matchName))
+            {
+                result.successful = false;
+                result.bestMatch = null;
+            }
 
             OnSpellCastAttempt?.Invoke(result);
+
         }
 
         /// <summary>Read-only access to the strokes drawn so far this gesture. Used by SpellTemplateRecorder.</summary>
