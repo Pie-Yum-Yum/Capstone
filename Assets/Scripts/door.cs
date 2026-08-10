@@ -121,7 +121,7 @@ public class door : MonoBehaviour
 
             if (Input.GetKeyDown(interactKey))
             {
-                OpenDoorAwayFromPlayer();
+                OpenDoorAwayFromObject(playerCamera);
             }
         }
         else if (!lookingAtDoor)
@@ -145,19 +145,23 @@ public class door : MonoBehaviour
         }
     }
 
-    private void OpenDoorAwayFromPlayer()
+    private void OpenDoorAwayFromObject(Transform Opener)
     {
         if (isOpen)
         {
             targetRotation = closedRotation;
             isOpen = false;
             isMoving = true;
+            
+            GetComponent<NavMeshObstacle>().enabled = false;
             return;
         }
+        
+        GetComponent<NavMeshObstacle>().enabled = true;
 
-        Vector3 toPlayer = playerCamera.position - hinge.position;
-        float side = Vector3.Dot(hinge.right, toPlayer);
-        float direction = side >= 0f ? -1f : 1f;
+        Vector3 toPlayer = Opener.transform.position - hinge.position;
+        float side = Vector3.Dot(hinge.forward, toPlayer);
+        float direction = side >= 0f ? 1f : -1f;
 
         if (invertOpenDirection)
             direction *= -1f;
@@ -188,5 +192,13 @@ public class door : MonoBehaviour
         isLocked = false;
         
         GetComponent<NavMeshObstacle>().enabled = false;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Monster") && !isLocked && !isOpen)
+        {
+            OpenDoorAwayFromObject(collision.gameObject.transform);
+        }
     }
 }

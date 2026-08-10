@@ -306,6 +306,7 @@ public class MonsterAI : MonoBehaviour
         // Hook this up to your game-over / damage logic.
         // if (animator != null) animator.SetTrigger("Attack");
         Debug.Log("Monster caught the player.");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 
     // ---------------- Helpers ----------------

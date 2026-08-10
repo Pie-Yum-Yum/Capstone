@@ -208,5 +208,10 @@ namespace SpellSystem
             inkTexture.SetPixels32(clearPixels);
             inkTexture.Apply();
         }
+
+        public HashSet<string> GetUnlockedSpells()
+        {
+            return unlockedSpells;
+        }
     }
 }
