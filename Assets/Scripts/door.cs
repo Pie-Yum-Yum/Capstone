@@ -29,6 +29,10 @@ public class door : MonoBehaviour
     public GameObject lockObject;
     public bool isLocked;
 
+    public bool IsOpen => isOpen;
+    public bool IsLocked => isLocked;
+    public Vector3 HingeLocalEuler => hinge != null ? hinge.localEulerAngles : transform.localEulerAngles;
+
     private MaterialPropertyBlock propertyBlock;
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
@@ -169,6 +173,34 @@ public class door : MonoBehaviour
         targetRotation = closedRotation * Quaternion.AngleAxis(openAngle * direction, Vector3.up);
         isOpen = true;
         isMoving = true;
+    }
+
+    public void ApplySavedState(bool open, bool locked, Vector3 hingeLocalEuler, bool brokenState)
+    {
+        isOpen = open;
+        isLocked = locked;
+        isMoving = false;
+
+        if (hinge != null)
+        {
+            hinge.localRotation = Quaternion.Euler(hingeLocalEuler);
+        }
+
+        if (lockObject != null)
+        {
+            lockObject.SetActive(locked);
+        }
+
+        NavMeshObstacle obstacle = GetComponent<NavMeshObstacle>();
+        if (obstacle != null)
+        {
+            obstacle.enabled = isLocked || isOpen;
+        }
+
+        if (brokenState && !isLocked && !isOpen)
+        {
+            isOpen = true;
+        }
     }
 
     public void lockDoor() // door lock for the lock spell !!
