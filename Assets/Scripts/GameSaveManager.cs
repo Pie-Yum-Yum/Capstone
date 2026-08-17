@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using SaveSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -36,6 +38,21 @@ public class GameSaveManager : MonoBehaviour
     }
 
     [Serializable]
+    public class SavedPickupState
+    {
+        public string pickupName;
+        public string spellName;
+        public bool isCollected;
+    }
+
+    [Serializable]
+    public class BreakableSaveState
+    {
+        public string objectName;
+        public bool isDestroyed;
+    }
+
+    [Serializable]
     public class SaveData
     {
         public string checkpointName;
@@ -45,8 +62,17 @@ public class GameSaveManager : MonoBehaviour
         public Vector3 playerRotation;
         public Vector3 monsterPosition;
         public Vector3 monsterRotation;
-        public List<DoorSaveState> doorStates = new List<DoorSaveState>();
+        public List<CheckpointStateEntry> checkpointEntries = new List<CheckpointStateEntry>();
         public List<string> unlockedSpells = new List<string>();
+
+        [Obsolete("Legacy field retained for backwards compatibility with older save files.")]
+        public List<DoorSaveState> doorStates = new List<DoorSaveState>();
+
+        [Obsolete("Legacy field retained for backwards compatibility with older save files.")]
+        public List<SavedPickupState> pickupStates = new List<SavedPickupState>();
+
+        [Obsolete("Legacy field retained for backwards compatibility with older save files.")]
+        public List<BreakableSaveState> breakableStates = new List<BreakableSaveState>();
     }
 
     private void Awake()
@@ -102,7 +128,7 @@ public class GameSaveManager : MonoBehaviour
             playerRotation = player.eulerAngles,
             monsterPosition = GetMonsterPosition(),
             monsterRotation = GetMonsterRotation(),
-            doorStates = CaptureDoorStates(),
+            checkpointEntries = CaptureCheckpointEntries(),
             unlockedSpells = GetUnlockedSpells()
         };
 
@@ -152,18 +178,33 @@ public class GameSaveManager : MonoBehaviour
             return;
         }
 
-        player.position = data.playerPosition;
-        player.rotation = Quaternion.Euler(data.playerRotation);
+        player.SetPositionAndRotation(data.playerPosition, Quaternion.Euler(data.playerRotation));
 
         Rigidbody rb = player.GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+            rb.position = data.playerPosition;
+            rb.rotation = Quaternion.Euler(data.playerRotation);
+            rb.Sleep();
         }
 
+        Physics.SyncTransforms();
+
         ApplyMonsterState(data);
-        ApplyDoorStates(data);
+
+        if (data.checkpointEntries != null && data.checkpointEntries.Count > 0)
+        {
+            RestoreCheckpointEntries(data);
+        }
+        else
+        {
+            ApplyDoorStates(data);
+            ApplyPickupStates(data);
+            ApplyBreakableStates(data);
+        }
+
         ApplyUnlockedSpells(data);
 
         Debug.Log("Loaded checkpoint: " + data.checkpointName + " in scene " + data.sceneName);
@@ -186,6 +227,80 @@ public class GameSaveManager : MonoBehaviour
             monsterRb.linearVelocity = Vector3.zero;
             monsterRb.angularVelocity = Vector3.zero;
         }
+
+        MonsterAI monsterAi = monster.GetComponent<MonsterAI>();
+        if (monsterAi != null)
+        {
+            monsterAi.ResetToPatrolState();
+        }
+    }
+
+    private List<CheckpointStateEntry> CaptureCheckpointEntries()
+    {
+        var saveables = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .OfType<ICheckpointSaveable>()
+            .Where(s => !string.IsNullOrWhiteSpace(s.SaveId))
+            .GroupBy(s => s.SaveId, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
+
+        List<CheckpointStateEntry> entries = new List<CheckpointStateEntry>();
+        foreach (ICheckpointSaveable saveable in saveables)
+        {
+            object state = saveable.CaptureState();
+            if (state == null)
+            {
+                continue;
+            }
+
+            string json = JsonUtility.ToJson(state);
+            entries.Add(new CheckpointStateEntry
+            {
+                saveId = saveable.SaveId,
+                typeName = state.GetType().AssemblyQualifiedName,
+                stateJson = json
+            });
+        }
+
+        return entries;
+    }
+
+    private void RestoreCheckpointEntries(SaveData data)
+    {
+        if (data == null || data.checkpointEntries == null)
+        {
+            return;
+        }
+
+        var saveables = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .OfType<ICheckpointSaveable>()
+            .GroupBy(saveable => saveable.SaveId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        foreach (CheckpointStateEntry entry in data.checkpointEntries)
+        {
+            if (string.IsNullOrWhiteSpace(entry.saveId) || !saveables.TryGetValue(entry.saveId, out ICheckpointSaveable saveable))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.stateJson))
+            {
+                continue;
+            }
+
+            Type stateType = Type.GetType(entry.typeName);
+            if (stateType == null)
+            {
+                continue;
+            }
+
+            object restoredState = JsonUtility.FromJson(entry.stateJson, stateType);
+            if (restoredState != null)
+            {
+                saveable.RestoreState(restoredState);
+            }
+        }
     }
 
     private void ApplyDoorStates(SaveData data)
@@ -195,7 +310,7 @@ public class GameSaveManager : MonoBehaviour
             return;
         }
 
-        door[] doors = FindObjectsOfType<door>();
+        door[] doors = FindObjectsByType<door>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (door currentDoor in doors)
         {
             foreach (DoorSaveState doorState in data.doorStates)
@@ -206,6 +321,52 @@ public class GameSaveManager : MonoBehaviour
                 }
 
                 currentDoor.ApplySavedState(doorState.isOpen, doorState.isLocked, doorState.hingeLocalRotation, doorState.isBroken);
+                break;
+            }
+        }
+    }
+
+    private void ApplyPickupStates(SaveData data)
+    {
+        if (data == null || data.pickupStates == null)
+        {
+            return;
+        }
+
+        NoteBookPage[] pages = FindObjectsByType<NoteBookPage>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (NoteBookPage page in pages)
+        {
+            foreach (SavedPickupState pickupState in data.pickupStates)
+            {
+                if (!string.Equals(page.name, pickupState.pickupName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                page.ApplySavedState(pickupState.isCollected, pickupState.spellName);
+                break;
+            }
+        }
+    }
+
+    private void ApplyBreakableStates(SaveData data)
+    {
+        if (data == null || data.breakableStates == null)
+        {
+            return;
+        }
+
+        DissolveObject[] breakables = FindObjectsByType<DissolveObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (DissolveObject breakable in breakables)
+        {
+            foreach (BreakableSaveState savedState in data.breakableStates)
+            {
+                if (!string.Equals(breakable.name, savedState.objectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                breakable.ApplySavedState(savedState.isDestroyed);
                 break;
             }
         }
@@ -243,7 +404,7 @@ public class GameSaveManager : MonoBehaviour
     private List<DoorSaveState> CaptureDoorStates()
     {
         List<DoorSaveState> states = new List<DoorSaveState>();
-        door[] doors = FindObjectsOfType<door>();
+        door[] doors = FindObjectsByType<door>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         foreach (door currentDoor in doors)
         {
@@ -258,6 +419,41 @@ public class GameSaveManager : MonoBehaviour
             };
 
             states.Add(state);
+        }
+
+        return states;
+    }
+
+    private List<SavedPickupState> CapturePickupStates()
+    {
+        List<SavedPickupState> states = new List<SavedPickupState>();
+        NoteBookPage[] pages = FindObjectsByType<NoteBookPage>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (NoteBookPage page in pages)
+        {
+            states.Add(new SavedPickupState
+            {
+                pickupName = page.name,
+                spellName = page.SpellName,
+                isCollected = page.IsCollected
+            });
+        }
+
+        return states;
+    }
+
+    private List<BreakableSaveState> CaptureBreakableStates()
+    {
+        List<BreakableSaveState> states = new List<BreakableSaveState>();
+        DissolveObject[] breakables = FindObjectsByType<DissolveObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (DissolveObject breakable in breakables)
+        {
+            states.Add(new BreakableSaveState
+            {
+                objectName = breakable.name,
+                isDestroyed = breakable.IsDestroyed
+            });
         }
 
         return states;

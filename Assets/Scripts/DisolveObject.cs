@@ -1,25 +1,51 @@
+using System;
 using System.Collections;
+using SaveSystem;
 using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
-public class DissolveObject : MonoBehaviour
+public class DissolveObject : MonoBehaviour, ICheckpointSaveable
 {
+    [Serializable]
+    public class BreakableCheckpointState
+    {
+        public string objectName;
+        public bool isDestroyed;
+    }
     [SerializeField] private float noiseStrength = 0.25f;
     [SerializeField] private float dissolveDuration = 1.5f;
 
     private Material material;
     private Renderer objectRenderer;
     private bool isDissolving = false;
+    private bool isDestroyed = false;
+    private float originalCutoffHeight;
     public GameObject ParentObject;
+
+    public string SaveId => CheckpointSaveIdUtility.GetStableSaveId(this);
+    public bool IsDestroyed => isDestroyed;
 
     private void Awake()
     {
-        objectRenderer = GetComponent<Renderer>();
-        material = objectRenderer.material;
+        EnsureRendererAndMaterial();
         material.SetFloat("_NoiseStrength", noiseStrength);
 
         // Cutoff above the object's actual world-space top = fully solid/visible
-        SetHeight(GetTopHeight()+2f);
+        originalCutoffHeight = GetTopHeight() + 2f;
+        SetHeight(originalCutoffHeight);
+    }
+
+    private void EnsureRendererAndMaterial()
+    {
+        if (objectRenderer == null)
+        {
+            objectRenderer = GetComponent<Renderer>();
+        }
+
+        if (objectRenderer != null)
+        {
+            material = objectRenderer.material;
+        }
     }
 
     private float GetTopHeight()
@@ -50,22 +76,93 @@ public class DissolveObject : MonoBehaviour
         }
 
         SetHeight(endHeight);
-        // Optional: gameObject.SetActive(false); or 
-        if(ParentObject != null)
+        isDestroyed = true;
+        if (ParentObject != null)
         {
-            Destroy(ParentObject, 0.1f);
+            ParentObject.SetActive(false);
         }
-        Destroy(gameObject, 0.1f);
+        else
+        {
+            gameObject.SetActive(false);
+        }
+        isDissolving = false;
+    }
+
+    public object CaptureState()
+    {
+        return new BreakableCheckpointState
+        {
+            objectName = name,
+            isDestroyed = isDestroyed
+        };
+    }
+
+    public void RestoreState(object state)
+    {
+        if (!(state is BreakableCheckpointState breakableState))
+        {
+            return;
+        }
+
+        ApplySavedState(breakableState.isDestroyed);
     }
 
     public void TriggerDissolve()
     {
-        if (isDissolving) return;
+        if (isDissolving || isDestroyed) return;
         StartCoroutine(DissolveRoutine());
+    }
+
+    public void ResetToOriginalCutoff()
+    {
+        EnsureRendererAndMaterial();
+        isDissolving = false;
+        isDestroyed = false;
+
+        if (objectRenderer != null && objectRenderer.bounds.size.sqrMagnitude > 0f)
+        {
+            originalCutoffHeight = GetTopHeight() + 2f;
+        }
+
+        SetHeight(originalCutoffHeight);
+    }
+
+    public void ApplySavedState(bool destroyed)
+    {
+        EnsureRendererAndMaterial();
+        isDestroyed = destroyed;
+        if (destroyed)
+        {
+            if (ParentObject != null)
+            {
+                ParentObject.SetActive(false);
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
+            SetHeight(GetBottomHeight());
+            return;
+        }
+
+        if (ParentObject != null)
+        {
+            ParentObject.SetActive(true);
+        }
+        else
+        {
+            gameObject.SetActive(true);
+        }
+
+        ResetToOriginalCutoff();
     }
 
     private void SetHeight(float height)
     {
-        material.SetFloat("_CutoffHeight", height);
+        EnsureRendererAndMaterial();
+        if (material != null)
+        {
+            material.SetFloat("_CutoffHeight", height);
+        }
     }
 }

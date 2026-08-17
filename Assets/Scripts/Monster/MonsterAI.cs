@@ -164,6 +164,11 @@ public class MonsterAI : MonoBehaviour
 
     // ---------------- Patrol ----------------
 
+    public void ResetToPatrolState()
+    {
+        EnterPatrol();
+    }
+
     private void EnterPatrol()
     {
         currentState = State.Patrol;

@@ -1,8 +1,19 @@
+using System;
+using SaveSystem;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class door : MonoBehaviour
+public class door : MonoBehaviour, ICheckpointSaveable
 {
+    [Serializable]
+    public class DoorCheckpointState
+    {
+        public string doorName;
+        public bool isOpen;
+        public bool isLocked;
+        public bool isBroken;
+        public Vector3 hingeLocalRotation;
+    }
     [Header("References")]
     public Transform playerCamera;
     public Transform hinge;
@@ -32,12 +43,19 @@ public class door : MonoBehaviour
     public bool IsOpen => isOpen;
     public bool IsLocked => isLocked;
     public Vector3 HingeLocalEuler => hinge != null ? hinge.localEulerAngles : transform.localEulerAngles;
+    public string SaveId => CheckpointSaveIdUtility.GetStableSaveId(this);
+    private bool suppressCollisionForLoad = false;
 
     private MaterialPropertyBlock propertyBlock;
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     private bool hasSpellHighlight;
     private Color spellHighlightColor = Color.black;
+
+    private void Awake()
+    {
+        propertyBlock = new MaterialPropertyBlock();
+    }
 
     void Start()
     {
@@ -47,8 +65,10 @@ public class door : MonoBehaviour
         closedRotation = hinge.localRotation;
         targetRotation = closedRotation;
 
-        propertyBlock = new MaterialPropertyBlock();
-        //isLocked = false;
+        if (propertyBlock == null)
+        {
+            propertyBlock = new MaterialPropertyBlock();
+        }
 
         if (doorRenderer != null && doorRenderer.sharedMaterial != null)
         {
@@ -74,6 +94,10 @@ public class door : MonoBehaviour
     private void ApplyGlow(Color color)
     {
         if (doorRenderer == null) return;
+        if (propertyBlock == null)
+        {
+            propertyBlock = new MaterialPropertyBlock();
+        }
 
         doorRenderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetColor(EmissionColorId, color * glowIntensity);
@@ -83,6 +107,10 @@ public class door : MonoBehaviour
     public void HighlightDoor(Color color, bool glow)
     {
         if (doorRenderer == null) return;
+        if (propertyBlock == null)
+        {
+            propertyBlock = new MaterialPropertyBlock();
+        }
 
         if (glow)
         {
@@ -175,6 +203,29 @@ public class door : MonoBehaviour
         isMoving = true;
     }
 
+    public object CaptureState()
+    {
+        Baracade barrier = GetComponentInParent<Baracade>();
+        return new DoorCheckpointState
+        {
+            doorName = name,
+            isOpen = isOpen,
+            isLocked = isLocked,
+            isBroken = barrier != null && barrier.IsBroken,
+            hingeLocalRotation = HingeLocalEuler
+        };
+    }
+
+    public void RestoreState(object state)
+    {
+        if (!(state is DoorCheckpointState doorState))
+        {
+            return;
+        }
+
+        ApplySavedState(doorState.isOpen, doorState.isLocked, doorState.hingeLocalRotation, doorState.isBroken);
+    }
+
     public void ApplySavedState(bool open, bool locked, Vector3 hingeLocalEuler, bool brokenState)
     {
         isOpen = open;
@@ -183,7 +234,10 @@ public class door : MonoBehaviour
 
         if (hinge != null)
         {
-            hinge.localRotation = Quaternion.Euler(hingeLocalEuler);
+            Quaternion savedRotation = Quaternion.Euler(hingeLocalEuler);
+            hinge.localRotation = savedRotation;
+            closedRotation = savedRotation;
+            targetRotation = savedRotation;
         }
 
         if (lockObject != null)
@@ -200,7 +254,15 @@ public class door : MonoBehaviour
         if (brokenState && !isLocked && !isOpen)
         {
             isOpen = true;
+            if (hinge != null)
+            {
+                targetRotation = closedRotation * Quaternion.AngleAxis(openAngle * (invertOpenDirection ? -1f : 1f), Vector3.up);
+                hinge.localRotation = targetRotation;
+            }
         }
+
+        suppressCollisionForLoad = true;
+        StartCoroutine(ResumeCollisionAfterLoad());
     }
 
     public void lockDoor() // door lock for the lock spell !!
@@ -228,9 +290,20 @@ public class door : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        if (suppressCollisionForLoad)
+        {
+            return;
+        }
+
         if (collision.gameObject.CompareTag("Monster") && !isLocked && !isOpen)
         {
             OpenDoorAwayFromObject(collision.gameObject.transform);
         }
+    }
+
+    private System.Collections.IEnumerator ResumeCollisionAfterLoad()
+    {
+        yield return new WaitForSeconds(0.2f);
+        suppressCollisionForLoad = false;
     }
 }

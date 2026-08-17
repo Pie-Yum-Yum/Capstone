@@ -8,16 +8,14 @@ public class CyclePage : MonoBehaviour
     private HashSet<string> unlockedSpells = new HashSet<string>();
     public SpellDrawingController spellDrawingController;
     public PlayerCam playerCam;
-    public Texture LockTexture;
-    public Texture FireballTexture;
-    public Texture LureTexture;
-    public Texture BaseTexture;
-    public SkinnedMeshRenderer targetSkinnedMeshRenderer;
-    public int targetMaterialElement = 1;
+    public Mesh LockTexture;
+    public Mesh FireballTexture;
+    public Mesh LureTexture;
+    public Mesh BaseTexture;
+    private MeshFilter targetRenderer;
+    //public int targetMaterialElement = 1;
     private string currentSpell;
     
-    private Renderer objectRenderer;
-    private Material material;
     //private string[] spellOrder = new string[] {"Fireball", "Lure", "Lock"};
 
     
@@ -25,9 +23,8 @@ public class CyclePage : MonoBehaviour
     void Start()
     {
         unlockedSpells = spellDrawingController.GetUnlockedSpells();
+        targetRenderer = GetComponent<MeshFilter>();
         
-        objectRenderer = GetComponent<Renderer>();
-        material = objectRenderer.material;
         //material.SetTexture("_Albedo", BaseTexture);
         currentSpell = "base";
 
@@ -67,6 +64,8 @@ public class CyclePage : MonoBehaviour
     private void cycle()
     {
         unlockedSpells = spellDrawingController.GetUnlockedSpells();
+        Debug.Log("Unlocked Spells: " + string.Join(", ", unlockedSpells));
+        Debug.Log("Current Spell: " + currentSpell);
         if (unlockedSpells.Count == 0)
         {
             SetTargetTexture(BaseTexture);
@@ -85,10 +84,10 @@ public class CyclePage : MonoBehaviour
                 SetTargetTexture(FireballTexture);
                 currentSpell = "Fireball";
             }
-            else if (unlockedSpells.Contains("Lure"))
+            else if (unlockedSpells.Contains("Noise"))
             {
                 SetTargetTexture(LureTexture);
-                currentSpell = "Lure";
+                currentSpell = "Noise";
             }
             else if (unlockedSpells.Contains("Lock"))
             {
@@ -99,13 +98,14 @@ public class CyclePage : MonoBehaviour
         
         else if(currentSpell == "Fireball")
         {
-            if (unlockedSpells.Contains("Lure"))
+            if (unlockedSpells.Contains("Noise"))
             {
                 SetTargetTexture(LureTexture);
-                currentSpell = "Lure";
+                currentSpell = "Noise";
             }
             else if (unlockedSpells.Contains("Lock"))
             {
+                Debug.Log("Switching to Lock from fireball");
                 SetTargetTexture(LockTexture);
                 currentSpell = "Lock";
             }else{
@@ -113,7 +113,7 @@ public class CyclePage : MonoBehaviour
             }
         }
         
-        else if(currentSpell == "Lure")
+        else if(currentSpell == "Noise")
         {
             if (unlockedSpells.Contains("Lock"))
             {
@@ -136,10 +136,10 @@ public class CyclePage : MonoBehaviour
                 SetTargetTexture(FireballTexture);
                 currentSpell = "Fireball";
             }
-            else if (unlockedSpells.Contains("Lure"))
+            else if (unlockedSpells.Contains("Noise"))
             {
                 SetTargetTexture(LureTexture);
-                currentSpell = "Lure";
+                currentSpell = "Noise";
             }else{
                 return;
             }
@@ -147,23 +147,13 @@ public class CyclePage : MonoBehaviour
 
     }
 
-    private void SetTargetTexture(Texture tex)
+    private void SetTargetTexture(Mesh mesh)
     {
-        if (targetSkinnedMeshRenderer != null)
+        if (targetRenderer != null)
         {
-            var mats = targetSkinnedMeshRenderer.materials;
-            if (mats != null && mats.Length > targetMaterialElement && mats[targetMaterialElement] != null)
-            {
-                mats[targetMaterialElement].SetTexture("_Albedo", tex);
-                //targetSkinnedMeshRenderer.materials = mats;
-                return;
-            }
-        }
-
-        // fallback to this object's material if target not set or invalid
-        if (material != null)
-        {
-            material.SetTexture("_Albedo", tex);
+            targetRenderer.mesh = mesh;
+            return;
+            
         }
     }
 

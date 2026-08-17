@@ -1867,8 +1867,8 @@
     "m_ObjectId": "5cf9ed47a2aa42398fc1b05f4cb5644d",
     "m_Title": "Glowing Edges",
     "m_Position": {
-        "x": -1156.0001220703125,
-        "y": -817.0000610351563
+        "x": -1156.0,
+        "y": -817.0
     }
 }
 
@@ -2268,8 +2268,8 @@
     "m_ObjectId": "84d78474bd3f4a899ff356a106b48eec",
     "m_Title": "World-space Cutoff",
     "m_Position": {
-        "x": -930.0000610351563,
-        "y": 588.0000610351563
+        "x": -930.0,
+        "y": 588.0
     }
 }
 
@@ -2402,7 +2402,7 @@
     "m_ObjectId": "8c88d1b65e6444139bd83b0296a40fce",
     "m_Title": "Noise Sample",
     "m_Position": {
-        "x": -2350.000244140625,
+        "x": -2350.0,
         "y": -566.0
     }
 }

@@ -29,12 +29,12 @@ public class PlayerCam : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Escape)){
             paused = !paused;
             if(paused){
-                animator.SetTrigger("Trigger1");
+                animator.SetTrigger("Open");
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 
             }else{
-                animator.SetTrigger("Trigger2");
+                animator.SetTrigger("Close");
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
