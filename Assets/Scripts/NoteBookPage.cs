@@ -188,7 +188,7 @@ public class NoteBookPage : MonoBehaviour, ICheckpointSaveable
         }
 
         Debug.Log($"Unlocked spell: {SpellName}");
-        SetPageColor(Color.blue);
+        //SetPageColor(Color.blue);
 
         if (TryGetComponent<DissolveObject>(out DissolveObject dissolveObject))
         {

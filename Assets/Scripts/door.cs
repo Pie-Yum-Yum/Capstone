@@ -74,6 +74,14 @@ public class door : MonoBehaviour, ICheckpointSaveable
         {
             doorRenderer.sharedMaterial.EnableKeyword("_EMISSION");
         }
+        if (playerCamera == null)
+        {
+            Camera mainCamera = Camera.main;
+            if (mainCamera != null)
+            {
+                playerCamera = mainCamera.transform;
+            }
+        }
     }
 
     public void SetSpellHighlight(bool enabled, Color color)

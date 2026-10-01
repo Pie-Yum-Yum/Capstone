@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using SpellSystem;
 using Unity.VisualScripting;
+using System.Collections;
 
 public class CyclePage : MonoBehaviour
 {
@@ -13,9 +14,10 @@ public class CyclePage : MonoBehaviour
     public Mesh LureTexture;
     public Mesh BaseTexture;
     private MeshFilter targetRenderer;
+    public Animator animator;
     //public int targetMaterialElement = 1;
     private string currentSpell;
-    
+    private bool canCycle = false;
     //private string[] spellOrder = new string[] {"Fireball", "Lure", "Lock"};
 
     
@@ -63,6 +65,7 @@ public class CyclePage : MonoBehaviour
     }
     private void cycle()
     {
+        if (!canCycle) return;
         unlockedSpells = spellDrawingController.GetUnlockedSpells();
         Debug.Log("Unlocked Spells: " + string.Join(", ", unlockedSpells));
         Debug.Log("Current Spell: " + currentSpell);
@@ -149,12 +152,24 @@ public class CyclePage : MonoBehaviour
 
     private void SetTargetTexture(Mesh mesh)
     {
+        canCycle = false; // Disable cycling while the animation is playing
         if (targetRenderer != null)
         {
-            targetRenderer.mesh = mesh;
+            animator.SetTrigger("Trigger4");
+            StartCoroutine(ResetTriggerAndUpdateMesh(mesh));
             return;
             
         }
+    }
+
+    private IEnumerator ResetTriggerAndUpdateMesh(Mesh mesh)
+    {
+        yield return new WaitForSeconds(0.1f);
+        targetRenderer.mesh = mesh;
+        yield return new WaitForSeconds(0.44f);
+        animator.ResetTrigger("Trigger4");
+        canCycle = true; // Re-enable cycling after the animation is done
+        
     }
 
     

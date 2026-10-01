@@ -2,69 +2,90 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Controls where ONE leg's foot target moves to, and how it gets there.
+/// Controls one leg's full lifecycle: deciding when to step (based on drift
+/// between current and desired foot position), picking crawl vs grapple,
+/// and managing two separate visual rigs -
+///   - spiderRigRoot: the jointed leg hierarchy (drives LegIKChain)
+///   - tentacleRigRoot: the single-piece tentacle (drives TentacleStretch)
 ///
-/// Unlike a timed gait, this checks every frame how far the foot's ACTUAL
-/// current position has drifted from its DESIRED position (a live raycast
-/// result toward the ground/nearby surface). Once that drift exceeds
-/// stepThreshold, the leg takes a step to catch back up - same idea as
-/// classic spider-leg IK rigs (see AimAtPoint reference).
-///
-/// Each step, it randomly picks one of two movement styles:
-///   - Grapple (tentacle): fast whip-out that snaps into place.
-///   - Crawl (spider): slower arced step, like lifting and placing a leg.
+/// Only one rig is "emerged" (visible, scaled up) at a time. If a step uses
+/// the same style as the last one, the leg stays emerged and just moves -
+/// it only retracts into the body and swaps rigs when the NEXT step needs
+/// the other style.
 /// </summary>
 public class LegStepController : MonoBehaviour
 {
     public enum StepStyle { Grapple, Crawl }
 
     [Header("References")]
-    public Transform footTarget;          // the target LegIKChain follows (actual placed foot)
-    public Transform legRoot;             // anchor point this leg searches outward from
-    public LayerMask surfaceMask;         // what counts as a valid foothold (ground, walls, props)
+    public Transform footTarget;          // shared target both rigs' scripts read from
+    public Transform legAnchor;           // fixed point on the body this leg searches outward from
+    public Transform bodyCenter;          // the monster's core/center - outward direction is computed FROM this
+    public LayerMask surfaceMask;
+
+    [Header("Rigs")]
+    [Tooltip("Parent object wrapping the jointed spider-leg hierarchy. Scaled 0->1 to emerge/retract.")]
+    public Transform spiderRigRoot;
+    [Tooltip("Parent object wrapping the single-piece tentacle mesh. Scaled 0->1 to emerge/retract.")]
+    public Transform tentacleRigRoot;
+    [Tooltip("Which style this leg starts already emerged as. Make sure the matching rig root starts " +
+             "at scale 1 and active in the scene, and the other starts at scale 0 and inactive.")]
+    public StepStyle startingStyle = StepStyle.Crawl;
+
+    [Header("Emerge / retract")]
+    public float emergeDuration = 0.25f;
+    public float retractDuration = 0.2f;
 
     [Header("Step trigger")]
-    [Tooltip("How far the desired foothold has to drift from the current foot position before a step is triggered.")]
     public float stepThreshold = 0.6f;
-    [Tooltip("How far from the leg root this leg is allowed to search for a foothold.")]
     public float searchRadius = 1.5f;
-    [Tooltip("Rays cast per search - more rays = more accurate foothold picking.")]
     public int searchRays = 12;
-    [Tooltip("How often (seconds) to recompute the desired foothold. 0 = every frame.")]
+    [Tooltip("Max angle (degrees) a candidate foothold ray is allowed to stray from the computed outward direction. " +
+             "Keeps footholds from crossing to the other side of the body - lower = tighter/safer, " +
+             "higher = more natural spread but more risk of reaching under/across the body.")]
+    public float searchConeAngle = 50f;
+    [Tooltip("How much to tilt the outward direction downward, so legs prefer footholds toward the ground " +
+             "rather than searching straight out at body height. 0 = pure outward, 1 = mostly downward.")]
+    [Range(0f, 1f)]
+    public float groundBias = 0.4f;
     public float desiredRecalcInterval = 0.05f;
 
     [Header("Grapple (tentacle) style")]
-    public float grappleSpeed = 14f;      // fast whip-out
+    public float grappleSpeed = 14f;
     public float grappleHoldTime = 0.6f;
 
     [Header("Crawl (spider) style")]
-    public float crawlSpeed = 4f;         // slower, deliberate
-    public float crawlArcHeight = 0.25f;  // how much the foot lifts mid-step
+    public float crawlSpeed = 4f;
+    public float crawlArcHeight = 0.25f;
     public float crawlHoldTime = 0.9f;
 
     [Header("Randomization")]
     [Range(0f, 1f)]
-    public float grappleChance = 0.5f;    // 0 = always crawl, 1 = always grapple
+    public float grappleChance = 0.5f;
 
     bool isStepping = false;
-    Vector3 currentFootPosition;   // where the foot actually is right now (last placed spot)
-    Vector3 desiredFootPosition;   // where the foot "wants" to be, recomputed periodically
+    StepStyle currentStyle;
+    Vector3 currentFootPosition;
+    Vector3 desiredFootPosition;
     float recalcTimer = 0f;
 
     public bool IsStepping => isStepping;
 
     void Start()
     {
-        // Initialize both to wherever the foot target currently sits, so it
-        // doesn't immediately think it needs to step on frame one.
+        currentStyle = startingStyle;
         currentFootPosition = footTarget.position;
         desiredFootPosition = FindFoothold();
+
+        // Make sure the scene matches what this script thinks is emerged.
+        // (You still need to set the correct starting scale/active state on
+        // the rig objects yourself - this just keeps them in sync going forward.)
+        SetRigState(spiderRigRoot, currentStyle == StepStyle.Crawl ? 1f : 0f);
+        SetRigState(tentacleRigRoot, currentStyle == StepStyle.Grapple ? 1f : 0f);
     }
 
     void Update()
     {
-        // Recompute the desired foothold on an interval rather than every
-        // single frame - raycasting every frame per leg adds up with several legs.
         recalcTimer -= Time.deltaTime;
         if (recalcTimer <= 0f)
         {
@@ -77,32 +98,104 @@ public class LegStepController : MonoBehaviour
         float drift = Vector3.Distance(currentFootPosition, desiredFootPosition);
         if (drift > stepThreshold)
         {
-            StepStyle style = (Random.value < grappleChance) ? StepStyle.Grapple : StepStyle.Crawl;
-            StartCoroutine(style == StepStyle.Grapple
-                ? DoGrappleStep(desiredFootPosition)
-                : DoCrawlStep(desiredFootPosition));
+            StartCoroutine(DoLegCycle(desiredFootPosition));
         }
+    }
+
+    Transform GetRig(StepStyle style) => style == StepStyle.Crawl ? spiderRigRoot : tentacleRigRoot;
+
+    void SetRigState(Transform rig, float scale)
+    {
+        if (rig == null) return;
+        rig.gameObject.SetActive(scale > 0f);
+        rig.localScale = Vector3.one * scale;
+    }
+
+    IEnumerator DoLegCycle(Vector3 destination)
+    {
+        isStepping = true;
+
+        Transform activeRig = GetRig(currentStyle);
+
+        // If the current rig isn't already emerged (e.g. right after a
+        // previous style swap), emerge it first before moving.
+        if (activeRig != null && activeRig.localScale.x < 0.99f)
+        {
+            yield return StartCoroutine(ScaleRig(activeRig, 0f, 1f, emergeDuration));
+        }
+
+        // Perform the actual foot movement - same as before.
+        if (currentStyle == StepStyle.Grapple)
+            yield return StartCoroutine(DoGrappleStep(destination));
+        else
+            yield return StartCoroutine(DoCrawlStep(destination));
+
+        // Decide the NEXT step's style now, so we know whether to retract.
+        StepStyle nextStyle = (Random.value < grappleChance) ? StepStyle.Grapple : StepStyle.Crawl;
+
+        if (nextStyle != currentStyle)
+        {
+            // Retract current rig, swap which rig is active.
+            yield return StartCoroutine(ScaleRig(activeRig, 1f, 0f, retractDuration));
+            currentStyle = nextStyle;
+
+            Transform newRig = GetRig(currentStyle);
+
+            // Emerge the new rig immediately, then take a catch-up step to a
+            // FRESHLY computed target rather than leaving the foot stationary
+            // until the next Update() drift check fires - the retract+emerge
+            // time alone lets the body drift further away, so waiting an
+            // extra cycle on top of that is what was causing the lag.
+            if (newRig != null)
+            {
+                yield return StartCoroutine(ScaleRig(newRig, 0f, 1f, emergeDuration));
+
+                Vector3 catchUpTarget = FindFoothold();
+
+                if (currentStyle == StepStyle.Grapple)
+                    yield return StartCoroutine(DoGrappleStep(catchUpTarget));
+                else
+                    yield return StartCoroutine(DoCrawlStep(catchUpTarget));
+            }
+        }
+        // else: leave the current rig emerged, nothing to swap.
+
+        isStepping = false;
+    }
+
+    IEnumerator ScaleRig(Transform rig, float from, float to, float duration)
+    {
+        if (rig == null) yield break;
+
+        if (to > 0f) rig.gameObject.SetActive(true);
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / Mathf.Max(duration, 0.0001f);
+            float eased = Mathf.SmoothStep(from, to, Mathf.Clamp01(t));
+            rig.localScale = Vector3.one * eased;
+            yield return null;
+        }
+
+        rig.localScale = Vector3.one * to;
+        if (to <= 0f) rig.gameObject.SetActive(false);
     }
 
     Vector3 FindFoothold()
     {
-        Vector3 origin = legRoot.position;
-        Vector3 best = currentFootPosition; // fall back to current spot if nothing better found
+        Vector3 origin = legAnchor.position;
+        Vector3 best = currentFootPosition;
         float bestScore = float.MinValue;
         bool foundAny = false;
 
         for (int i = 0; i < searchRays; i++)
         {
-            // Spread rays roughly forward/downward in a cone around the leg root,
-            // biased outward from the body so legs don't all reach for the same spot.
-            Vector3 randomDir = Random.onUnitSphere;
-            randomDir.y = Mathf.Abs(randomDir.y) * -1f; // bias downward/outward
-            Vector3 dir = (legRoot.forward + randomDir).normalized;
+            Vector3 outwardWorld = GetOutwardDirection();
+            Vector3 dir = RandomDirectionInCone(outwardWorld, searchConeAngle);
 
             if (Physics.Raycast(origin, dir, out RaycastHit hit, searchRadius, surfaceMask))
             {
-                // Prefer footholds close to the "ideal" resting distance from the root,
-                // not the closest or farthest hit - keeps legs from overreaching.
                 float idealDist = searchRadius * 0.6f;
                 float score = -Mathf.Abs(hit.distance - idealDist);
 
@@ -115,14 +208,50 @@ public class LegStepController : MonoBehaviour
             }
         }
 
-        // If nothing was hit this pass (e.g. leg over empty space), keep the
-        // last known desired position instead of snapping back to current foot.
         return foundAny ? best : desiredFootPosition;
+    }
+
+    // Computes the true outward direction for this leg based on body geometry
+    // (anchor position relative to body center) rather than the anchor's own
+    // rotation - robust even if anchors were only positioned, never individually
+    // rotated to face outward.
+    Vector3 GetOutwardDirection()
+    {
+        if (bodyCenter == null)
+        {
+            // Fallback if bodyCenter wasn't assigned - not as reliable, but
+            // better than nothing.
+            return legAnchor.forward;
+        }
+
+        Vector3 outward = (legAnchor.position - bodyCenter.position).normalized;
+        Vector3 blended = Vector3.Lerp(outward, Vector3.down, groundBias).normalized;
+        return blended;
+    }
+
+    // Returns a random direction within maxAngleDegrees of "forward" - used to
+    // keep foothold search rays from ever pointing back across the body.
+    Vector3 RandomDirectionInCone(Vector3 forward, float maxAngleDegrees)
+    {
+        forward.Normalize();
+
+        // Build an arbitrary perpendicular basis around "forward".
+        Vector3 perpendicular = Vector3.Cross(forward, Vector3.up);
+        if (perpendicular.sqrMagnitude < 0.0001f)
+            perpendicular = Vector3.Cross(forward, Vector3.right);
+        perpendicular.Normalize();
+
+        float tiltAngle = Random.Range(0f, maxAngleDegrees);
+        float spinAngle = Random.Range(0f, 360f);
+
+        Quaternion tilt = Quaternion.AngleAxis(tiltAngle, perpendicular);
+        Quaternion spin = Quaternion.AngleAxis(spinAngle, forward);
+
+        return spin * tilt * forward;
     }
 
     IEnumerator DoGrappleStep(Vector3 destination)
     {
-        isStepping = true;
         Vector3 start = footTarget.position;
         float t = 0f;
 
@@ -135,13 +264,11 @@ public class LegStepController : MonoBehaviour
 
         footTarget.position = destination;
         currentFootPosition = destination;
-        yield return new WaitForSeconds(grappleHoldTime);
-        isStepping = false;
+        yield return StartCoroutine(HoldUntilDriftOrTimeout(grappleHoldTime));
     }
 
     IEnumerator DoCrawlStep(Vector3 destination)
     {
-        isStepping = true;
         Vector3 start = footTarget.position;
         float t = 0f;
 
@@ -157,8 +284,26 @@ public class LegStepController : MonoBehaviour
 
         footTarget.position = destination;
         currentFootPosition = destination;
-        yield return new WaitForSeconds(crawlHoldTime);
-        isStepping = false;
+        yield return StartCoroutine(HoldUntilDriftOrTimeout(crawlHoldTime));
+    }
+
+    // Waits up to holdTime, but bails out early the moment drift between the
+    // foot's current and desired position builds back past stepThreshold -
+    // otherwise a leg sits through its FULL hold time even while the body
+    // keeps moving away underneath it, and steadily falls behind.
+    IEnumerator HoldUntilDriftOrTimeout(float holdTime)
+    {
+        float elapsed = 0f;
+        while (elapsed < holdTime)
+        {
+            elapsed += Time.deltaTime;
+
+            float drift = Vector3.Distance(currentFootPosition, desiredFootPosition);
+            if (drift > stepThreshold)
+                yield break; // don't wait out the rest of the hold - step again now
+
+            yield return null;
+        }
     }
 
     float EaseOutBack(float x)

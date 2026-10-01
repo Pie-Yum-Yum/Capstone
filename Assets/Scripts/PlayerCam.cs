@@ -1,4 +1,6 @@
+using SpellSystem;
 using UnityEngine;
+
 
 public class PlayerCam : MonoBehaviour
 {
@@ -13,6 +15,7 @@ public class PlayerCam : MonoBehaviour
     float yRotation;
     public bool paused;
     public Animator animator;
+    public SpellDrawingController SpellDrawingController;
 
 
 
@@ -29,12 +32,13 @@ public class PlayerCam : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Escape)){
             paused = !paused;
             if(paused){
-                animator.SetTrigger("Open");
+                animator.SetTrigger("Trigger1");
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 
             }else{
-                animator.SetTrigger("Close");
+                animator.SetTrigger("Trigger3");
+                SpellDrawingController.ClearPage();
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }

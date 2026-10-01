@@ -3,3 +3,7 @@ walls -- offest y 1.6
 overhang -- offset y 0.68
 
 roof -- offset y 1.4 
+
+roof light -- offset y 1.1
+
+corner -- offset y 1.6 z 1.1
