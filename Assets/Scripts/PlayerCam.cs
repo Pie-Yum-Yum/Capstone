@@ -18,6 +18,8 @@ public class PlayerCam : MonoBehaviour
     float xRotation;
     float yRotation;
     public bool paused;
+    [Tooltip("Opens/closes the settings menu directly, without drawing the Menu spell.")]
+    public KeyCode settingsMenuKey = KeyCode.Tab;
     public Animator animator;
     public SpellDrawingController SpellDrawingController;
     public bool flashlightOn = false;
@@ -35,10 +37,23 @@ public class PlayerCam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape) && MenuOptions.GamePaused){
-            // Settings menu is open: Esc acts like its Resume button.
+        if((Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(settingsMenuKey)) && MenuOptions.GamePaused){
+            // Settings menu is open: Esc or the menu key acts like its Resume button.
             MenuOptions menuOptions = FindAnyObjectByType<MenuOptions>(FindObjectsInactive.Include);
             if(menuOptions != null) menuOptions.resumeGame();
+            return;
+        }
+        if(Input.GetKeyDown(settingsMenuKey)){
+            // Open the settings menu directly (no spell / ink needed).
+            MenuOptions menuOptions = FindAnyObjectByType<MenuOptions>(FindObjectsInactive.Include);
+            if(menuOptions != null){
+                if(paused){
+                    // Close the spellbook first, same as pressing Esc.
+                    animator.SetTrigger("Trigger3");
+                    SpellDrawingController.ClearPage();
+                }
+                menuOptions.PauseGame();
+            }
             return;
         }
         if(Input.GetKeyDown(KeyCode.Escape)){

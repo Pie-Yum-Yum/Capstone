@@ -39,6 +39,9 @@ namespace SpellSystem
         private List<Vector2> currentStroke;
         private Vector2? lastPaintedPixel;
 
+        // Ink spent on the drawing currently on the page (for fizzle refunds). Reset on ClearPage/cast.
+        private float inkSpentOnDrawing;
+
         public System.Action<RecognitionResult> OnSpellCastAttempt;
 
         [Header("Spell Unlock List")]
@@ -95,6 +98,9 @@ namespace SpellSystem
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            // Out of ink: the pen won't start a new stroke.
+            if (InkManager.Instance != null && !InkManager.Instance.HasInk) return;
+
             currentStroke = new List<Vector2>();
             gestureStrokes.Add(currentStroke);
             lastPaintedPixel = null;
@@ -120,8 +126,29 @@ namespace SpellSystem
                     rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint))
                 return;
 
+            // Spend ink for the line from the previous point to this one. If the player can only
+            // afford part of it, stop the line where the ink ran out and end the stroke.
+            bool ranOut = false;
+            InkManager ink = InkManager.Instance;
+            if (ink != null && currentStroke.Count > 0)
+            {
+                Vector2 previous = currentStroke[currentStroke.Count - 1];
+                float pageWidths = Vector2.Distance(previous, localPoint) / Mathf.Max(rectTransform.rect.width, 0.0001f);
+                float inkBefore = ink.CurrentInk;
+                float affordable = ink.SpendForLine(pageWidths);
+                inkSpentOnDrawing += inkBefore - ink.CurrentInk;
+
+                if (affordable < 1f)
+                {
+                    localPoint = Vector2.Lerp(previous, localPoint, affordable);
+                    ranOut = true;
+                }
+            }
+
             currentStroke.Add(localPoint);
             PaintInk(localPoint);
+
+            if (ranOut) currentStroke = null;
         }
 
         // ---- Ink rendering (visual only, not used for recognition) ---------
@@ -195,6 +222,14 @@ namespace SpellSystem
                 result.bestMatch = null;
             }
 
+            // Fizzled casts can refund part of the ink (InkManager.fizzleRefundFraction, 0 by default).
+            // The spent counter resets either way so the same drawing can't be refunded twice.
+            if (!result.successful && InkManager.Instance != null)
+            {
+                InkManager.Instance.RefundFizzle(inkSpentOnDrawing);
+            }
+            inkSpentOnDrawing = 0f;
+
             OnSpellCastAttempt?.Invoke(result);
 
         }
@@ -208,6 +243,7 @@ namespace SpellSystem
             gestureStrokes.Clear();
             currentStroke = null;
             lastPaintedPixel = null;
+            inkSpentOnDrawing = 0f;
 
             inkTexture.SetPixels32(clearPixels);
             inkTexture.Apply();

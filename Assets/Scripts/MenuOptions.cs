@@ -1,3 +1,4 @@
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,25 +7,29 @@ using UnityEngine.UI;
 public class MenuOptions : MonoBehaviour
 {
     
+    
+    
     [Header("Volume")]
     public float volumeLvl;
-    public GameObject volumeInd;
+    public GameObject VolumeCurrentValue;
     public Slider volumeSlider; 
-
+    
     [Header("Brightness")]
     public float brightnessLvl;
-    public GameObject brightnessInd;
+    public GameObject BrightnessCurrentValue;
     public Slider brightnessSlider;
     
     [Header("Sensitivity")]
     public float sensitivityLvl;
-    public GameObject sensitivityInd;
     public Slider sensitivitySlider;
+    public GameObject SensitivityCurrentValue;
     
     [Header("Ascii")]
     public float AsciiAffector;
-    public GameObject AsciiInd;
     public Slider AsciiSlider;
+    public GameObject AsciiCurrentValue;
+
+
     [Header("Fullscreen")]    
     public bool isFullscreen;
 
@@ -84,13 +89,12 @@ public class MenuOptions : MonoBehaviour
 
     public void SliderValueChanged(){
         // Called by every settings slider's On Value Changed. Each one is optional.
-        if (volumeSlider != null) { volumeLvl = volumeSlider.value; volumeInd = volumeLvl; }
-        if (brightnessSlider != null) { brightnessLvl = brightnessSlider.value; brightnessInd = brightnessLvl; }
+        if (volumeSlider != null) { volumeLvl = volumeSlider.value; }
+        if (brightnessSlider != null) { brightnessLvl = brightnessSlider.value; }
 
         if (sensitivitySlider != null)
         {
-            sensitivityLvl = sensitivitySlider.normalizedValue;
-            sensitivityInd = sensitivityLvl;
+            sensitivityLvl = sensitivitySlider.value;
             PlayerPrefs.SetFloat(SensitivityPrefKey, sensitivityLvl);
 
             if (playerCam == null) playerCam = FindAnyObjectByType<PlayerCam>();
@@ -100,10 +104,16 @@ public class MenuOptions : MonoBehaviour
         if (AsciiSlider != null)
         {
             AsciiAffector = AsciiSlider.value;
-            AsciiInd = AsciiAffector;
             PlayerPrefs.SetFloat(AsciiPrefKey, AsciiAffector);
             if (asciiMaterial != null) asciiMaterial.SetFloat(CharCountId, AsciiAffector);
         }
+
+        VolumeCurrentValue.GetComponent<TextMeshProUGUI>().text = volumeLvl.ToString("0");
+        //BrightnessCurrentValue.GetComponent<TextMeshProUGUI>().text = brightnessLvl.ToString("0");
+        SensitivityCurrentValue.GetComponent<TextMeshProUGUI>().text = (sensitivityLvl*100).ToString("0");
+        AsciiCurrentValue.GetComponent<TextMeshProUGUI>().text = AsciiAffector.ToString("0");
+
+
     }
        
     public void ExitToMenu()
