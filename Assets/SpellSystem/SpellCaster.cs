@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace SpellSystem
@@ -10,7 +11,10 @@ namespace SpellSystem
         public Animator animator;
         public PlayerCam PlayerCam;
         public PlayerMovement playerMovement;
-        public GameObject EyeTint;
+        [Header("Menu object")]
+        public GameObject menuObject;
+        [Tooltip("Settings/pause menu controller. Auto-found in the scene if left empty.")]
+        public MenuOptions menuOptions;
 
         private door currentHighlightedDoor;
 
@@ -47,6 +51,17 @@ namespace SpellSystem
             PlayerCam.paused = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+
+        public void CastMenuSpell(SpellCastContext incomingContext)
+        {
+            context = incomingContext;
+            PrimedSpell = "Menu";
+            animator.SetTrigger("Trigger2");
+            //PlayerCam.paused = false;
+            //Cursor.lockState = CursorLockMode.Locked;
+            //Cursor.visible = false;
+            menuOptions.PauseGame();    
         }
         
 
@@ -110,28 +125,21 @@ namespace SpellSystem
                     } 
 
                     break;
-                case "Eye":
+                case "Menu":
                     SpellDrawingController.ClearPage();
                     PrimedSpell = null;
-                    // psudo code for eye spell
 
-                    // animation -- cover eyes / close eyes
-                    // move player cam up
-                    // tint screen yellow
-                    // after 5 seconds, remove tint and move cam back down
-
-                    // stop all other player movement and actions for 5 seconds and allow the player to look all around (unclamp the camera from the 90*)
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                    PlayerCam.paused = false;
-                    playerMovement.allowMovement = false;
-                    
-
-                    PlayerCam.transform.position += new Vector3(0, 5, 0);
-                    EyeTint.SetActive(true);
-                    
-                    // wait 5 seconds
-                    Invoke("EndEye", 5f);
+                    // MenuOptions.PauseGame() shows the menu and freezes the game via Time.timeScale,
+                    // which stops the monster, its leg IK, physics and timers all at once.
+                    if (menuOptions == null) menuOptions = FindAnyObjectByType<MenuOptions>(FindObjectsInactive.Include);
+                    if (menuOptions != null)
+                    {
+                        menuOptions.PauseGame();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Menu spell cast but no MenuOptions found in the scene.");
+                    }
 
 
                     break;
@@ -181,13 +189,6 @@ namespace SpellSystem
 
                 break;
             }
-        }
-        private void EndEye()
-        {
-            EyeTint.SetActive(false);
-            PlayerCam.transform.position -= new Vector3(0, 5, 0);
-            playerMovement.allowMovement = true;
-            
         }
     }
 }

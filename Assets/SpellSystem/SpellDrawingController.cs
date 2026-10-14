@@ -58,6 +58,10 @@ namespace SpellSystem
         {
             unlockedSpells.Add(spellName);
         }
+        void Start()
+        {
+            unlockedSpells.Add("Menu");
+        }
         public void ReloadKnownSpells()
         {
             knownSpells = SpellDatabase.BuildKnownSpells();

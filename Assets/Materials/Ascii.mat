@@ -89,6 +89,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _AtlasRampCount: 20
     - _BgShade: 0.35
     - _BgSoftness: 0.08
     - _BgThreshold: 0.55
@@ -96,7 +97,7 @@ Material:
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _CellSize: 21.5
-    - _CharCount: 10
+    - _CharCount: 20
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorBlend: 1
@@ -106,8 +107,8 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeStrength: 0.46
-    - _EdgeThreshold: 0.263
+    - _EdgeStrength: 1.1
+    - _EdgeThreshold: 0.23
     - _EnvironmentReflections: 1
     - _Gamma: 0.2
     - _GlossMapScale: 0

@@ -117,7 +117,9 @@ public class MonsterAI : MonoBehaviour
     {
         if (player == null) return;
 
-        bool playerDetected = CheckProximity() || CheckVisionCone() && !playerMovement.hidingSpot;
+        // A hidden player can't be felt or seen. (The old line only applied the hiding check to vision,
+        // because && binds tighter than ||, so proximity still detected hidden players.)
+        bool playerDetected = !IsPlayerHidden() && (CheckProximity() || CheckVisionCone());
 
         if (playerDetected)
         {
@@ -136,6 +138,11 @@ public class MonsterAI : MonoBehaviour
                 EnterInvestigate(heardSound.position);
             }
         }
+    }
+
+    private bool IsPlayerHidden()
+    {
+        return playerMovement != null && playerMovement.hidingSpot;
     }
 
     private bool CheckProximity()
@@ -284,7 +291,7 @@ public class MonsterAI : MonoBehaviour
 
     private void TickChase()
     {
-        bool stillDetected = CheckProximity() || CheckVisionCone();
+        bool stillDetected = !IsPlayerHidden() && (CheckProximity() || CheckVisionCone());
         if (stillDetected)
         {
             lastKnownPlayerPosition = player.position;
@@ -293,7 +300,7 @@ public class MonsterAI : MonoBehaviour
 
         agent.SetDestination(lastKnownPlayerPosition);
 
-        if (Vector3.Distance(transform.position, player.position) <= catchDistance)
+        if (!IsPlayerHidden() && Vector3.Distance(transform.position, player.position) <= catchDistance)
         {
             OnPlayerCaught();
             return;

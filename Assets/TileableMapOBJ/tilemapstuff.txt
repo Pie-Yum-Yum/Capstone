@@ -1,4 +1,4 @@
-walls -- offest y 1.6
+walls -- offest y 1.6 z 1.1
 
 overhang -- offset y 0.68
 

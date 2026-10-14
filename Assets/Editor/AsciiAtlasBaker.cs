@@ -48,8 +48,8 @@ public class AsciiAtlasBaker : EditorWindow
 
         EditorGUILayout.Space();
         EditorGUILayout.HelpBox(
-            "Set _CharCount on the material to " + Mathf.Max(1, ramp.Length) +
-            " (ramp length only, not counting the 4 edge glyphs).",
+            "Set _AtlasRampCount on the material to " + Mathf.Max(1, ramp.Length) +
+            " (ramp length only, not counting the 4 edge glyphs). _CharCount can then be anything (it's the settings slider).",
             MessageType.Info);
 
         if (GUILayout.Button("Bake Atlas", GUILayout.Height(30)))
@@ -145,7 +145,7 @@ public class AsciiAtlasBaker : EditorWindow
         ApplyImportSettings(outputPath);
 
         Debug.Log("[AsciiAtlasBaker] Baked " + all.Length + " tiles to " + outputPath +
-                  ". Set _CharCount = " + ramp.Length + " on the material.");
+                  ". Set _AtlasRampCount = " + ramp.Length + " on the material.");
     }
 
     private static void ApplyImportSettings(string path)

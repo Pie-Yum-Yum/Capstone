@@ -56,6 +56,7 @@ namespace SpellSystem
             new SpellMetadata { spellName = "Eye", minAccuracyToCast = 0.7f, effectId = "Eye" },
             new SpellMetadata { spellName = "Fireball", minAccuracyToCast = 0.7f, effectId = "Fireball" },
             new SpellMetadata { spellName = "Noise", minAccuracyToCast = 0.7f, effectId = "Noise" },
+            new SpellMetadata { spellName = "Menu", minAccuracyToCast = 0.7f, effectId = "Menu" },
         };
 
         public static List<SpellDefinition> BuildKnownSpells()

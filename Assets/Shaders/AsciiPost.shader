@@ -8,6 +8,7 @@ Shader "Custom/Ascii Post"
     {
         [NoScaleOffset] _AsciiAtlas ("ASCII Atlas (ramp + 4 edge glyphs)", 2D) = "white" {}
         _CharCount    ("Ramp Character Count", Float) = 10
+        _AtlasRampCount ("Atlas Ramp Glyphs (as baked)", Float) = 10
         _CellSize     ("Cell Size (px)", Float) = 8
         _Gamma        ("Luminance Gamma", Range(0.2, 3)) = 1
         _EdgeStrength ("Edge Strength", Range(0, 4)) = 1
@@ -46,6 +47,7 @@ Shader "Custom/Ascii Post"
 
             CBUFFER_START(UnityPerMaterial)
                 float  _CharCount;
+                float  _AtlasRampCount;
                 float  _CellSize;
                 float  _Gamma;
                 float  _EdgeStrength;
@@ -120,9 +122,15 @@ Shader "Custom/Ascii Post"
                 lum = pow(lum, _Gamma);
 
                 // --- density glyph ---
-                int rampCount = max(1, (int)_CharCount);
-                int index = (int)floor(lum * rampCount);
-                index = clamp(index, 0, rampCount - 1);
+                // _CharCount = how many brightness levels to use (driven by the settings slider).
+                // _AtlasRampCount = how many density glyphs are actually baked into the atlas.
+                // Levels are spread evenly across the baked glyphs, so the tile layout never shifts.
+                int rampCount  = max(1, (int)_CharCount);
+                int atlasRamp  = max(1, (int)_AtlasRampCount);
+                int level      = clamp((int)floor(lum * rampCount), 0, rampCount - 1);
+                int index      = rampCount > 1
+                    ? (int)round(level * (atlasRamp - 1) / (float)(rampCount - 1))
+                    : atlasRamp - 1;
 
                 // --- Sobel on cell luminance -> directional glyph ---
                 float l[9];
@@ -147,11 +155,11 @@ Shader "Custom/Ascii Post"
                     float a = atan2(gy, gx) + PI * 0.5;
                     a = a - PI * floor(a / PI);              // wrap into [0, PI)
                     int bin = ((int)floor(a / (PI * 0.25) + 0.5)) % EDGE_GLYPH_COUNT;
-                    index = rampCount + bin;                 // atlas order: dash, slash, pipe, backslash
+                    index = atlasRamp + bin;                 // atlas order: dash, slash, pipe, backslash
                 }
 
                 // --- sample the atlas ---
-                float totalTiles = rampCount + EDGE_GLYPH_COUNT;
+                float totalTiles = atlasRamp + EDGE_GLYPH_COUNT;
                 float2 atlasUV = float2((index + inCell.x) / totalTiles, inCell.y);
                 float glyph = SAMPLE_TEXTURE2D(_AsciiAtlas, sampler_AsciiAtlas, atlasUV).r;
 

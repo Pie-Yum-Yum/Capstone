@@ -2558,8 +2558,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e454000df493b94bbb24273f3327790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCam
-  sensX: 400
-  sensY: 400
+  sensX: 6.67
+  sensY: 6.67
   orientation: {fileID: 997325331}
   paused: 0
   animator: {fileID: 1585327362}
