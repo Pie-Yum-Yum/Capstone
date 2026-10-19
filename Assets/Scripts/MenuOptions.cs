@@ -30,8 +30,12 @@ public class MenuOptions : MonoBehaviour
     public GameObject AsciiCurrentValue;
 
 
-    [Header("Fullscreen")]    
+    [Header("Fullscreen")]
     public bool isFullscreen;
+
+    [Header("Popups")]
+    [Tooltip("Toggle that turns interact/tutorial popups on or off. Its On Value Changed should call SetPopupsEnabled (Dynamic bool).")]
+    public Toggle popupsToggle;
 
     [Header("References")]
     public GameObject menuObject;
@@ -85,6 +89,14 @@ public class MenuOptions : MonoBehaviour
             AsciiSlider.wholeNumbers = true;
             if (asciiMaterial != null) AsciiSlider.SetValueWithoutNotify(asciiMaterial.GetFloat(CharCountId));
         }
+
+        if (popupsToggle != null) popupsToggle.SetIsOnWithoutNotify(PromptPopup.PromptsEnabled);
+    }
+
+    // Hook the popups Toggle's On Value Changed up to this (pick it from the "Dynamic bool" list).
+    public void SetPopupsEnabled(bool enabled)
+    {
+        PromptPopup.PromptsEnabled = enabled;
     }
 
     public void SliderValueChanged(){
@@ -119,7 +131,7 @@ public class MenuOptions : MonoBehaviour
     public void ExitToMenu()
     {
         //load next scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene(1); // check that the scene is the correct number
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0); // check that the scene is the correct number
         //onValueChanged();
     }
 

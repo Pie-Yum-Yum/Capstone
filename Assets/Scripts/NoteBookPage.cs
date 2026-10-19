@@ -161,17 +161,18 @@ public class NoteBookPage : MonoBehaviour, ICheckpointSaveable
                 isPlayerLookingAtPage = hit.transform == transform || hit.transform.IsChildOf(transform);
                 SetPageColor(Color.yellow);
             }
-            else
-            {
-                isPlayerLookingAtPage = false;
-                SetPageColor(Color.white);
-            }
+            
             
             if (isPlayerLookingAtPage && Input.GetKeyDown(interactKey))
             {
                 CollectPage();
             }
         }
+        else
+            {
+                isPlayerLookingAtPage = false;
+                SetPageColor(Color.white);
+            }
     }
 
     private void CollectPage()

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7353450193433298427
+--- !u!1 &386500231105367350
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,12 +8,12 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1051116950559115053}
-  - component: {fileID: 2623077839829693263}
-  - component: {fileID: 8151312557597571124}
-  - component: {fileID: 8388141685787007650}
-  - component: {fileID: 5319822667912038033}
-  - component: {fileID: 6160101401608928657}
+  - component: {fileID: 2383125479625610278}
+  - component: {fileID: 4110567170372570362}
+  - component: {fileID: 4190766150826267035}
+  - component: {fileID: 2885787251173768848}
+  - component: {fileID: 6735934828750384372}
+  - component: {fileID: 153087343096052301}
   m_Layer: 0
   m_Name: LockUnlock
   m_TagString: Untagged
@@ -21,36 +21,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1051116950559115053
+--- !u!4 &2383125479625610278
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7353450193433298427}
+  m_GameObject: {fileID: 386500231105367350}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.16887842, y: -0, z: -0, w: 0.98563695}
-  m_LocalPosition: {x: 9.843, y: 0.456, z: 9.559}
-  m_LocalScale: {x: 0.667, y: 1, z: 1}
+  m_LocalRotation: {x: 0.10702823, y: 0.69896024, z: 0.10702813, w: 0.6989597}
+  m_LocalPosition: {x: 9.708, y: 0.5, z: 9.55}
+  m_LocalScale: {x: 0.30864647, y: 0.3997588, z: 0.30864647}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 19.445, y: 0, z: 0}
---- !u!33 &2623077839829693263
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &4110567170372570362
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7353450193433298427}
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &8151312557597571124
+  m_GameObject: {fileID: 386500231105367350}
+  m_Mesh: {fileID: -2432090755550338912, guid: 483d729f8d5abc04ca95657ffb23aea5, type: 3}
+--- !u!23 &4190766150826267035
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7353450193433298427}
+  m_GameObject: {fileID: 386500231105367350}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -69,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ec18eca681c43dc40b448a547d3a0c26, type: 2}
+  - {fileID: 2100000, guid: d62ac13172d1e514395bd8563fb4ca64, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -93,13 +93,45 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8388141685787007650
+--- !u!114 &2885787251173768848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386500231105367350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3a3916d07990be479fcc687d6525f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NoteBookPage
+  playerCamera: {fileID: 0}
+  spellDrawingController: {fileID: 0}
+  SpellName: Lock
+  interactDistance: 3
+  interactKey: 101
+--- !u!114 &6735934828750384372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386500231105367350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  dissolveDuration: 0.25
+  ParentObject: {fileID: 0}
+--- !u!64 &153087343096052301
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7353450193433298427}
+  m_GameObject: {fileID: 386500231105367350}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -114,36 +146,4 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &5319822667912038033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7353450193433298427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3a3916d07990be479fcc687d6525f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NoteBookPage
-  playerCamera: {fileID: 0}
-  spellDrawingController: {fileID: 0}
-  SpellName: Lock
-  interactDistance: 3
-  interactKey: 101
---- !u!114 &6160101401608928657
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7353450193433298427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
-  noiseStrength: 0.25
-  dissolveDuration: 1.5
-  ParentObject: {fileID: 0}
+  m_Mesh: {fileID: -2432090755550338912, guid: 483d729f8d5abc04ca95657ffb23aea5, type: 3}

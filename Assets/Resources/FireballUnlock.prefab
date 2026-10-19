@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &9186395121407471227
+--- !u!1 &6250364483435201193
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,12 +8,13 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3070625245957625109}
-  - component: {fileID: 8488661257927597252}
-  - component: {fileID: 3697958466267442403}
-  - component: {fileID: 8327498602579203665}
-  - component: {fileID: 1687264881382185858}
-  - component: {fileID: 2491353361943425971}
+  - component: {fileID: 1475604945782216398}
+  - component: {fileID: 8549767934186090004}
+  - component: {fileID: 8225203763635404114}
+  - component: {fileID: 4130901604516167535}
+  - component: {fileID: 3415617490783880593}
+  - component: {fileID: 8968308180795580832}
+  - component: {fileID: 2468137615928867713}
   m_Layer: 0
   m_Name: FireballUnlock
   m_TagString: Untagged
@@ -21,36 +22,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3070625245957625109
+--- !u!4 &1475604945782216398
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9186395121407471227}
+  m_GameObject: {fileID: 6250364483435201193}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7339982, y: -0, z: -0, w: 0.6791515}
-  m_LocalPosition: {x: 5.51, y: 1.463, z: -0.471}
-  m_LocalScale: {x: 0.667, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0.8868638, z: -0, w: 0.462031}
+  m_LocalPosition: {x: 4.787, y: 1.756, z: -0.677}
+  m_LocalScale: {x: 0.17799, y: 0.23451963, z: 0.17799}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 94.44501, y: 0, z: 0}
---- !u!33 &8488661257927597252
+  m_LocalEulerAnglesHint: {x: 0, y: -124.964, z: 0}
+--- !u!33 &8549767934186090004
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9186395121407471227}
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &3697958466267442403
+  m_GameObject: {fileID: 6250364483435201193}
+  m_Mesh: {fileID: -2432090755550338912, guid: 45c69f505a4571a459792eb32c999c15, type: 3}
+--- !u!23 &8225203763635404114
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9186395121407471227}
+  m_GameObject: {fileID: 6250364483435201193}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -69,7 +70,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ec18eca681c43dc40b448a547d3a0c26, type: 2}
+  - {fileID: 2100000, guid: d62ac13172d1e514395bd8563fb4ca64, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -93,13 +94,62 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8327498602579203665
+--- !u!114 &4130901604516167535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6250364483435201193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3a3916d07990be479fcc687d6525f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NoteBookPage
+  playerCamera: {fileID: 0}
+  spellDrawingController: {fileID: 0}
+  SpellName: Fireball
+  interactDistance: 3
+  interactKey: 101
+--- !u!114 &3415617490783880593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6250364483435201193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
+  noiseStrength: 0.25
+  dissolveDuration: 0.25
+  ParentObject: {fileID: 0}
+--- !u!114 &8968308180795580832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6250364483435201193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 918f0d61c26081d46a1834bd29596aaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractPrompt
+  promptText: 'Pickup Fireball spell: ''E'''
+  showPrompt: 1
+  interactDistance: 3
+  openDoorText: na
+  lockedDoorText: 
+--- !u!64 &2468137615928867713
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9186395121407471227}
+  m_GameObject: {fileID: 6250364483435201193}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -114,36 +164,4 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1687264881382185858
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9186395121407471227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3a3916d07990be479fcc687d6525f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NoteBookPage
-  playerCamera: {fileID: 0}
-  spellDrawingController: {fileID: 0}
-  SpellName: Fireball
-  interactDistance: 3
-  interactKey: 101
---- !u!114 &2491353361943425971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9186395121407471227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c12730b6be53024c85f1cf89523e06b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DissolveObject
-  noiseStrength: 0.25
-  dissolveDuration: 1.5
-  ParentObject: {fileID: 0}
+  m_Mesh: {fileID: -2432090755550338912, guid: 45c69f505a4571a459792eb32c999c15, type: 3}

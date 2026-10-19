@@ -7,3 +7,9 @@ roof -- offset y 1.4
 roof light -- offset y 1.1
 
 corner -- offset y 1.6 z 1.1
+
+----NEW
+
+overhang - regular -- offset z -0.5
+
+overhang - corner -- offset x 0.6 || z 0.5
