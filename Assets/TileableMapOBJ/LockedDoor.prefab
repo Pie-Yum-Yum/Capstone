@@ -947,9 +947,14 @@ MonoBehaviour:
   interactKey: 101
   glowColor: {r: 0.8, g: 0.8, b: 0.2, a: 1}
   glowIntensity: 0.73
+  audioSource: {fileID: 0}
+  openClip: {fileID: 8300000, guid: 71201afac18ec6c449c2041d69557007, type: 3}
+  closeClip: {fileID: 8300000, guid: c5b43f04e118440489eefb02eea5d891, type: 3}
+  doorVolume: 0.8
+  doorPitchRange: {x: 0.95, y: 1.05}
   invertOpenDirection: 0
   lookingAtDoor: 0
-  lockObject: {fileID: 0}
+  lockObject: {fileID: 3084144852372206691}
   isLocked: 0
 --- !u!208 &4225494782787387561
 NavMeshObstacle:

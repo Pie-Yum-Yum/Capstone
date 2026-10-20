@@ -57,6 +57,27 @@ public class MenuOptions : MonoBehaviour
         return Mathf.Pow(SensitivityRangeFactor, (Mathf.Clamp01(slider01) - 0.5f) * 2f);
     }
 
+    // ---- Volume ----
+    // Slider position is stored as 0..1 (works whatever min/max the slider uses) and drives
+    // AudioListener.volume, i.e. every sound in the game. Squared because hearing is roughly
+    // logarithmic: a linear mapping makes the top half of the slider feel like it does nothing.
+    private const string VolumePrefKey = "Settings.Volume";
+
+    public static float SavedVolume => PlayerPrefs.GetFloat(VolumePrefKey, 1f);
+
+    public static void ApplyVolume(float slider01)
+    {
+        float v = Mathf.Clamp01(slider01);
+        AudioListener.volume = v * v;
+    }
+
+    // Apply the saved volume as soon as the game starts, in every scene, even if no MenuOptions exists yet.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void ApplySavedVolumeOnStartup()
+    {
+        ApplyVolume(SavedVolume);
+    }
+
     // ---- ASCII ----
     private const string AsciiPrefKey = "Settings.AsciiCharCount";
     private const int AsciiMinChars = 5;
@@ -77,6 +98,13 @@ public class MenuOptions : MonoBehaviour
     private void Start()
     {
         // Configure and fill the sliders without firing SliderValueChanged.
+        if (volumeSlider != null)
+        {
+            volumeSlider.SetValueWithoutNotify(Mathf.Lerp(volumeSlider.minValue, volumeSlider.maxValue, SavedVolume));
+            volumeLvl = SavedVolume;
+            if (VolumeCurrentValue != null) VolumeCurrentValue.GetComponent<TextMeshProUGUI>().text = (volumeLvl * 100).ToString("0");
+        }
+
         if (sensitivitySlider != null)
         {
             sensitivitySlider.SetValueWithoutNotify(Mathf.Lerp(sensitivitySlider.minValue, sensitivitySlider.maxValue, SavedSensitivity));
@@ -101,7 +129,12 @@ public class MenuOptions : MonoBehaviour
 
     public void SliderValueChanged(){
         // Called by every settings slider's On Value Changed. Each one is optional.
-        if (volumeSlider != null) { volumeLvl = volumeSlider.value; }
+        if (volumeSlider != null)
+        {
+            volumeLvl = Mathf.InverseLerp(volumeSlider.minValue, volumeSlider.maxValue, volumeSlider.value);
+            PlayerPrefs.SetFloat(VolumePrefKey, volumeLvl);
+            ApplyVolume(volumeLvl);
+        }
         if (brightnessSlider != null) { brightnessLvl = brightnessSlider.value; }
 
         if (sensitivitySlider != null)
@@ -120,7 +153,7 @@ public class MenuOptions : MonoBehaviour
             if (asciiMaterial != null) asciiMaterial.SetFloat(CharCountId, AsciiAffector);
         }
 
-        VolumeCurrentValue.GetComponent<TextMeshProUGUI>().text = volumeLvl.ToString("0");
+        VolumeCurrentValue.GetComponent<TextMeshProUGUI>().text = (volumeLvl * 100).ToString("0");
         //BrightnessCurrentValue.GetComponent<TextMeshProUGUI>().text = brightnessLvl.ToString("0");
         SensitivityCurrentValue.GetComponent<TextMeshProUGUI>().text = (sensitivityLvl*100).ToString("0");
         AsciiCurrentValue.GetComponent<TextMeshProUGUI>().text = AsciiAffector.ToString("0");

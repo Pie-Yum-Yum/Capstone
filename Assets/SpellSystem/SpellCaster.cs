@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 
 namespace SpellSystem
@@ -16,7 +15,20 @@ namespace SpellSystem
         [Tooltip("Settings/pause menu controller. Auto-found in the scene if left empty.")]
         public MenuOptions menuOptions;
 
+        [Tooltip("Plays each spell's release sound. Auto-found in the scene if left empty.")]
+        public SpellbookAudio spellbookAudio;
+
         private door currentHighlightedDoor;
+
+        private void Start()
+        {
+            if (spellbookAudio == null) spellbookAudio = FindAnyObjectByType<SpellbookAudio>(FindObjectsInactive.Include);
+        }
+
+        private void PlayRelease(string spellName)
+        {
+            if (spellbookAudio != null) spellbookAudio.PlayRelease(spellName);
+        }
 
         public void CastLockSpell(SpellCastContext incomingContext)
         {
@@ -106,6 +118,7 @@ namespace SpellSystem
                         if (Input.GetMouseButtonDown(0))
                         {
                             currentHighlightedDoor.lockDoor();
+                            PlayRelease("Lock");
                             PrimedSpell = null;
                             currentHighlightedDoor.SetSpellHighlight(false, Color.black);
                             currentHighlightedDoor = null;
@@ -160,6 +173,7 @@ namespace SpellSystem
                         {
                             GameObject fireball = Instantiate(Resources.Load("Fireball") as GameObject, context.castOrigin.position + context.castOrigin.forward * 2, Quaternion.identity);
                             fireball.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 100f);
+                            PlayRelease("Fireball");
                             PrimedSpell = null;
                         }
                     if (Input.GetMouseButtonDown(1))
@@ -180,6 +194,7 @@ namespace SpellSystem
                         {
                             GameObject Lure = Instantiate(Resources.Load("Lure") as GameObject, context.castOrigin.position + context.castOrigin.forward * 2, Quaternion.identity);
                             Lure.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 300f);
+                            PlayRelease("Noise");
                             PrimedSpell = null;
                         }
                     if (Input.GetMouseButtonDown(1))

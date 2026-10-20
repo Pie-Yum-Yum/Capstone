@@ -29,6 +29,16 @@ public class door : MonoBehaviour, ICheckpointSaveable
     public Color glowColor = new Color(0.8f, 0.8f, 0.2f, 1f);
     public float glowIntensity = 1.5f;
 
+    [Header("Audio")]
+    [Tooltip("3D source on the door. Leave empty to create one.")]
+    public AudioSource audioSource;
+    [Tooltip("Plays the moment the door starts swinging open (handle + creak).")]
+    public AudioClip openClip;
+    [Tooltip("Plays when the door finishes swinging shut, so the latch 'clunk' lines up with it hitting the frame.")]
+    public AudioClip closeClip;
+    [Range(0f, 1f)] public float doorVolume = 0.8f;
+    public Vector2 doorPitchRange = new Vector2(0.95f, 1.05f);
+
     [Header("Optional")]
     public bool invertOpenDirection = false;
 
@@ -55,6 +65,23 @@ public class door : MonoBehaviour, ICheckpointSaveable
     private void Awake()
     {
         propertyBlock = new MaterialPropertyBlock();
+
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f; // fully 3D: you hear where the door is
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+            audioSource.minDistance = 1.5f;
+            audioSource.maxDistance = 20f;
+        }
+    }
+
+    private void PlayDoorSound(AudioClip clip)
+    {
+        if (clip == null || audioSource == null) return;
+        audioSource.pitch = UnityEngine.Random.Range(doorPitchRange.x, doorPitchRange.y);
+        audioSource.PlayOneShot(clip, doorVolume);
     }
 
     void Start()
@@ -181,6 +208,8 @@ public class door : MonoBehaviour, ICheckpointSaveable
             {
                 hinge.localRotation = targetRotation;
                 isMoving = false;
+
+                if (!isOpen) PlayDoorSound(closeClip);
             }
         }
     }
@@ -209,6 +238,7 @@ public class door : MonoBehaviour, ICheckpointSaveable
         targetRotation = closedRotation * Quaternion.AngleAxis(openAngle * direction, Vector3.up);
         isOpen = true;
         isMoving = true;
+        PlayDoorSound(openClip);
     }
 
     public object CaptureState()

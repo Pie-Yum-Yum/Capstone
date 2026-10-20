@@ -22,8 +22,22 @@ public class PlayerCam : MonoBehaviour
     public KeyCode settingsMenuKey = KeyCode.Tab;
     public Animator animator;
     public SpellDrawingController SpellDrawingController;
-    public bool flashlightOn = false;
+    [Tooltip("Optional. Plays book open/close sounds. Auto-found if left empty.")]
+    public SpellbookAudio spellbookAudio;
+
+    [Header("Flashlight")]
     public GameObject flashlight;
+    [Tooltip("Whether the flashlight is on when the level starts. The flashlight object is set to match on Start, " +
+             "so it no longer matters whether it's active in the scene.")]
+    public bool flashlightStartsOn = false;
+    [Tooltip("Click when turning on. If the off clip is empty this one is used for both.")]
+    public AudioClip flashlightOnClip;
+    public AudioClip flashlightOffClip;
+    [Range(0f, 1f)] public float flashlightVolume = 0.7f;
+    // Not serialized: the old serialized value could disagree with the object's real state,
+    // which made the first F press "turn off" a light that was already off.
+    [System.NonSerialized] public bool flashlightOn;
+    private AudioSource flashlightAudio;
 
 
 
@@ -32,6 +46,34 @@ public class PlayerCam : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         sensitivityMultiplier = MenuOptions.SensitivityMultiplier(MenuOptions.SavedSensitivity);
+
+        if (spellbookAudio == null) spellbookAudio = FindAnyObjectByType<SpellbookAudio>(FindObjectsInactive.Include);
+
+        flashlightOn = flashlightStartsOn;
+        if (flashlight != null) flashlight.SetActive(flashlightOn);
+        flashlightAudio = gameObject.AddComponent<AudioSource>();
+        flashlightAudio.playOnAwake = false;
+        flashlightAudio.spatialBlend = 0f;
+    }
+
+    private void ToggleFlashlight()
+    {
+        flashlightOn = !flashlightOn;
+        if (flashlight != null) flashlight.SetActive(flashlightOn);
+
+        AudioClip clip = flashlightOn || flashlightOffClip == null ? flashlightOnClip : flashlightOffClip;
+        if (clip != null)
+        {
+            flashlightAudio.pitch = Random.Range(0.95f, 1.05f);
+            flashlightAudio.PlayOneShot(clip, flashlightVolume);
+        }
+    }
+
+    private void CloseBook()
+    {
+        animator.SetTrigger("Trigger3");
+        SpellDrawingController.ClearPage();
+        if (spellbookAudio != null) spellbookAudio.PlayClose();
     }
 
     // Update is called once per frame
@@ -49,8 +91,7 @@ public class PlayerCam : MonoBehaviour
             if(menuOptions != null){
                 if(paused){
                     // Close the spellbook first, same as pressing Esc.
-                    animator.SetTrigger("Trigger3");
-                    SpellDrawingController.ClearPage();
+                    CloseBook();
                 }
                 menuOptions.PauseGame();
             }
@@ -60,12 +101,12 @@ public class PlayerCam : MonoBehaviour
             paused = !paused;
             if(paused){
                 animator.SetTrigger("Trigger1");
+                if (spellbookAudio != null) spellbookAudio.PlayOpen();
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-                
+
             }else{
-                animator.SetTrigger("Trigger3");
-                SpellDrawingController.ClearPage();
+                CloseBook();
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
@@ -81,8 +122,7 @@ public class PlayerCam : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.F))
         {
-            flashlightOn = !flashlightOn;
-            flashlight.SetActive(flashlightOn);
+            ToggleFlashlight();
         }
         xRotation = Mathf.Clamp(xRotation, -90f, 90f); 
 

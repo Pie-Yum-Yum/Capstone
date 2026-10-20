@@ -44,6 +44,15 @@ namespace SpellSystem
 
         public System.Action<RecognitionResult> OnSpellCastAttempt;
 
+        // ---- Pen state (used by SpellbookAudio for the scratch sound) ----
+        /// <summary>Fired when the pen touches the page and a new stroke begins.</summary>
+        public System.Action OnStrokeStarted;
+        /// <summary>True while the pen is down and still laying ink.</summary>
+        public bool IsDrawing => currentStroke != null;
+        /// <summary>Smoothed pen speed in page widths per second (0 when the pen isn't moving).</summary>
+        public float PenSpeed { get; private set; }
+        private float penDistanceThisFrame;
+
         [Header("Spell Unlock List")]
         [Tooltip("A list of all spells that have been unlocked by the player.")]
         private HashSet<string> unlockedSpells = new HashSet<string>();
@@ -83,6 +92,16 @@ namespace SpellSystem
             ReloadKnownSpells();
         }
 
+        private void Update()
+        {
+            // Drag events don't arrive every frame, so smooth the raw per-frame speed.
+            float dt = Mathf.Max(Time.unscaledDeltaTime, 0.0001f);
+            float rawSpeed = penDistanceThisFrame / dt;
+            PenSpeed = Mathf.Lerp(PenSpeed, rawSpeed, 1f - Mathf.Exp(-20f * dt));
+            if (!IsDrawing) PenSpeed = 0f;
+            penDistanceThisFrame = 0f;
+        }
+
         private void SetupInkTexture()
         {
             inkTexture = new Texture2D(textureResolution, textureResolution, TextureFormat.RGBA32, false);
@@ -105,6 +124,7 @@ namespace SpellSystem
             gestureStrokes.Add(currentStroke);
             lastPaintedPixel = null;
             AddPoint(eventData);
+            OnStrokeStarted?.Invoke();
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -143,6 +163,12 @@ namespace SpellSystem
                     localPoint = Vector2.Lerp(previous, localPoint, affordable);
                     ranOut = true;
                 }
+            }
+
+            if (currentStroke.Count > 0)
+            {
+                penDistanceThisFrame += Vector2.Distance(currentStroke[currentStroke.Count - 1], localPoint)
+                                        / Mathf.Max(rectTransform.rect.width, 0.0001f);
             }
 
             currentStroke.Add(localPoint);

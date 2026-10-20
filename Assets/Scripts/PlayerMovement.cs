@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour
     float targetMoveSpeed;
     public bool isCrouching;
     bool isSprinting;
+    public bool IsSprinting => isSprinting;
     public bool hidingSpot;
     
 
