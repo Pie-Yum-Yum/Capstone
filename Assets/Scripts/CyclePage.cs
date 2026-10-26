@@ -18,6 +18,12 @@ public class CyclePage : MonoBehaviour
     public Mesh baseMesh;
     public List<SpellPage> spellPages = new List<SpellPage>(); // cycle order = list order
 
+    [Header("Audio")]
+    [Tooltip("Optional. Plays when the page turns. Use several for variety; one is picked at random.")]
+    public AudioClip[] pageTurnClips;
+    [Range(0f, 1f)] public float pageTurnVolume = 0.7f;
+
+    private AudioSource audioSource;
     private MeshFilter meshFilter;
     private MeshCollider meshCollider;
     private int currentIndex = -1;   // -1 means the base page
@@ -27,6 +33,9 @@ public class CyclePage : MonoBehaviour
     {
         meshFilter = GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
         ShowPage(-1, false);
         //meshFilter.mesh = baseMesh;
     }
@@ -73,7 +82,17 @@ public class CyclePage : MonoBehaviour
 
         canCycle = false;
         animator.SetTrigger("Trigger4");
+        PlayPageTurn();
         StartCoroutine(SwapMeshAfterAnimation(mesh));
+    }
+
+    private void PlayPageTurn()
+    {
+        if (pageTurnClips == null || pageTurnClips.Length == 0) return;
+        AudioClip clip = pageTurnClips[Random.Range(0, pageTurnClips.Length)];
+        if (clip == null) return;
+        audioSource.pitch = Random.Range(0.95f, 1.05f);
+        audioSource.PlayOneShot(clip, pageTurnVolume);
     }
 
     private void ShowPage(int index, bool animate)
@@ -82,7 +101,11 @@ public class CyclePage : MonoBehaviour
         Mesh mesh = index < 0 ? baseMesh : spellPages[index].mesh;
 
         canCycle = false;
-        if (animate) animator.SetTrigger("Trigger4");
+        if (animate)
+        {
+            animator.SetTrigger("Trigger4");
+            PlayPageTurn();
+        }
         StartCoroutine(SwapMeshAfterAnimation(mesh));
     }
 

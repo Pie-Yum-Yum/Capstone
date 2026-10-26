@@ -9,7 +9,7 @@ namespace SpellSystem
     ///
     /// - SpellDrawingController spends ink as the player draws (cost scales with line length).
     /// - At 0 ink the player can't start a new stroke, and a stroke in progress is cut off.
-    /// - Ink slowly regenerates, but NOT while the spellbook is open (or the game is paused).
+    /// - Ink slowly regenerates up to regenCapFraction of max, but NOT while the spellbook is open (or the game is paused).
     /// - Pickups call AddInk() for bigger refills.
     /// - Saved with checkpoints like other ICheckpointSaveable objects.
     ///
@@ -38,6 +38,9 @@ namespace SpellSystem
         [Header("Regeneration")]
         [Tooltip("Ink regained per second while the spellbook is closed.")]
         public float regenPerSecond = 2f;
+        [Tooltip("Passive regen stops at this fraction of max ink (0.35 = 35%). Pickups can still fill past it.")]
+        [Range(0f, 1f)]
+        public float regenCapFraction = 0.35f;
         [Tooltip("Used to tell whether the spellbook is open. Auto-found if left empty.")]
         public PlayerCam playerCam;
 
@@ -88,9 +91,10 @@ namespace SpellSystem
         {
             // Spellbook open = no regen. The settings-menu pause also stops this, since Time.deltaTime is 0 then.
             bool spellbookOpen = playerCam != null && playerCam.paused;
-            if (spellbookOpen || currentInk >= maxInk) return;
+            float regenCap = maxInk * regenCapFraction;
+            if (spellbookOpen || currentInk >= regenCap) return;
 
-            SetInk(currentInk + regenPerSecond * Time.deltaTime);
+            SetInk(Mathf.Min(currentInk + regenPerSecond * Time.deltaTime, regenCap));
         }
 
         /// <summary>

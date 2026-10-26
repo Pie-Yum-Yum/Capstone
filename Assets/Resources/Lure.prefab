@@ -130,6 +130,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 1.5
   ParentObject: {fileID: 0}
+  dissolveClip: {fileID: 0}
+  dissolveVolume: 0.8
+  dissolveSoundMaxDistance: 20
 --- !u!114 &9187604415327043512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,6 +145,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50325636468ca334e88a244f22d6d9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Lure
+  pingClip: {fileID: 8300000, guid: 49c9316c153317a4b9c398171bd5a6ad, type: 3}
+  finalPingClip: {fileID: 8300000, guid: 9ed4ffce1080c82478313c324b116ee7, type: 3}
+  pingVolume: 1
+  pingMinDistance: 2
+  pingMaxDistance: 30
 --- !u!54 &6866536401948735116
 Rigidbody:
   m_ObjectHideFlags: 0

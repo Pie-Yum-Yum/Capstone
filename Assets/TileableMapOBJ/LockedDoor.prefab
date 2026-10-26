@@ -195,6 +195,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 1.5
   ParentObject: {fileID: 0}
+  dissolveClip: {fileID: 0}
+  dissolveVolume: 0.8
+  dissolveSoundMaxDistance: 20
 --- !u!1 &1789020428171941585
 GameObject:
   m_ObjectHideFlags: 0
@@ -392,6 +395,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 1.5
   ParentObject: {fileID: 0}
+  dissolveClip: {fileID: 0}
+  dissolveVolume: 0.8
+  dissolveSoundMaxDistance: 20
 --- !u!1 &3084144852372206691
 GameObject:
   m_ObjectHideFlags: 0
@@ -610,6 +616,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 1.5
   ParentObject: {fileID: 0}
+  dissolveClip: {fileID: 0}
+  dissolveVolume: 0.8
+  dissolveSoundMaxDistance: 20
 --- !u!1 &5895306753962498860
 GameObject:
   m_ObjectHideFlags: 0
@@ -716,6 +725,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 1.5
   ParentObject: {fileID: 0}
+  dissolveClip: {fileID: 0}
+  dissolveVolume: 0.8
+  dissolveSoundMaxDistance: 20
 --- !u!1 &9195379417234506435
 GameObject:
   m_ObjectHideFlags: 0
@@ -822,6 +834,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 1.5
   ParentObject: {fileID: 193543661202357784}
+  dissolveClip: {fileID: 8300000, guid: 4b7a67317e65f924ab021a24b49cb4bc, type: 3}
+  dissolveVolume: 0.63
+  dissolveSoundMaxDistance: 20
 --- !u!1001 &6186479045320670424
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -950,7 +965,7 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openClip: {fileID: 8300000, guid: 71201afac18ec6c449c2041d69557007, type: 3}
   closeClip: {fileID: 8300000, guid: c5b43f04e118440489eefb02eea5d891, type: 3}
-  doorVolume: 0.8
+  doorVolume: 0.553
   doorPitchRange: {x: 0.95, y: 1.05}
   invertOpenDirection: 0
   lookingAtDoor: 0

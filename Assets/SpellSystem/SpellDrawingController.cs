@@ -27,6 +27,14 @@ namespace SpellSystem
         [SerializeField] private Color inkColor = Color.white;
         [SerializeField] private int brushRadius = 3;
 
+        [Header("Fizzle")]
+        [Tooltip("Colour the ink flashes when a cast fizzles.")]
+        [SerializeField] private Color fizzleGlowColor = new Color(1f, 0.85f, 0.2f, 1f);
+        [Tooltip("Seconds the ink stays lit up before fading.")]
+        [SerializeField] private float fizzleGlowDuration = 0.25f;
+        [Tooltip("Seconds the ink takes to fade to nothing after the glow.")]
+        [SerializeField] private float fizzleFadeDuration = 0.35f;
+
         [Header("Spells")]
         [Tooltip("Populated in code from SpellDatabase.BuildKnownSpells() on Awake - see that file to add/edit spells and paste in exported samples.")]
         private List<SpellDefinition> knownSpells = new List<SpellDefinition>();
@@ -52,6 +60,9 @@ namespace SpellSystem
         /// <summary>Smoothed pen speed in page widths per second (0 when the pen isn't moving).</summary>
         public float PenSpeed { get; private set; }
         private float penDistanceThisFrame;
+
+        private Coroutine fizzleRoutine;
+        private Color inkSurfaceBaseColor = Color.white;
 
         [Header("Spell Unlock List")]
         [Tooltip("A list of all spells that have been unlocked by the player.")]
@@ -88,8 +99,15 @@ namespace SpellSystem
         private void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
+            if (inkSurface != null) inkSurfaceBaseColor = inkSurface.color;
             SetupInkTexture();
             ReloadKnownSpells();
+        }
+
+        // If the book is hidden mid-fizzle the coroutine dies, so finish the clear here.
+        private void OnDisable()
+        {
+            if (fizzleRoutine != null) ClearPage();
         }
 
         private void Update()
@@ -119,6 +137,8 @@ namespace SpellSystem
         {
             // Out of ink: the pen won't start a new stroke.
             if (InkManager.Instance != null && !InkManager.Instance.HasInk) return;
+            // Wait for the fizzled drawing to finish fading before drawing again.
+            if (fizzleRoutine != null) return;
 
             currentStroke = new List<Vector2>();
             gestureStrokes.Add(currentStroke);
@@ -256,8 +276,62 @@ namespace SpellSystem
             }
             inkSpentOnDrawing = 0f;
 
+            if (!result.successful) StartFizzle();
+
             OnSpellCastAttempt?.Invoke(result);
 
+        }
+
+        // Failed cast: the drawing is thrown away straight away (so it can't be cast again), but
+        // the ink stays on screen just long enough to flash yellow and fade out.
+        private void StartFizzle()
+        {
+            gestureStrokes.Clear();
+            currentStroke = null;
+            lastPaintedPixel = null;
+
+            if (inkSurface == null || !isActiveAndEnabled)
+            {
+                ClearPage();
+                return;
+            }
+
+            if (fizzleRoutine != null) StopCoroutine(fizzleRoutine);
+            fizzleRoutine = StartCoroutine(FizzleRoutine());
+        }
+
+        private System.Collections.IEnumerator FizzleRoutine()
+        {
+            // Recolour every inked pixel to the glow colour (keeping its alpha). Tinting the RawImage
+            // wouldn't work because RawImage.color multiplies, and dark ink times yellow is still dark.
+            Color32 glow32 = fizzleGlowColor;
+            Color32[] pixels = inkTexture.GetPixels32();
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                if (pixels[i].a == 0) continue;
+                pixels[i] = new Color32(glow32.r, glow32.g, glow32.b, pixels[i].a);
+            }
+            inkTexture.SetPixels32(pixels);
+            inkTexture.Apply();
+
+            // White keeps the yellow pure; the fade below only changes alpha.
+            Color glow = new Color(1f, 1f, 1f, inkSurfaceBaseColor.a);
+            inkSurface.color = glow;
+
+            // Unscaled so it still plays if the Menu spell freezes time right after.
+            yield return new WaitForSecondsRealtime(fizzleGlowDuration);
+
+            float elapsed = 0f;
+            while (elapsed < fizzleFadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                Color c = glow;
+                c.a = Mathf.Lerp(glow.a, 0f, elapsed / Mathf.Max(fizzleFadeDuration, 0.0001f));
+                inkSurface.color = c;
+                yield return null;
+            }
+
+            ClearPage();
         }
 
         /// <summary>Read-only access to the strokes drawn so far this gesture. Used by SpellTemplateRecorder.</summary>
@@ -270,6 +344,13 @@ namespace SpellSystem
             currentStroke = null;
             lastPaintedPixel = null;
             inkSpentOnDrawing = 0f;
+
+            if (fizzleRoutine != null)
+            {
+                StopCoroutine(fizzleRoutine);
+                fizzleRoutine = null;
+            }
+            if (inkSurface != null) inkSurface.color = inkSurfaceBaseColor;
 
             inkTexture.SetPixels32(clearPixels);
             inkTexture.Apply();

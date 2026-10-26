@@ -43,6 +43,8 @@ public class PromptPopup : MonoBehaviour
     public float hiddenOffset = 200f;
     [Tooltip("Higher = snappier slide.")]
     public float slideSpeed = 12f;
+    [Tooltip("Letters typed per second when text appears. 0 = show instantly.")]
+    public float charactersPerSecond = 60f;
 
     private RectTransform rect;
     private CanvasGroup canvasGroup;
@@ -50,6 +52,8 @@ public class PromptPopup : MonoBehaviour
     private Vector2 hiddenPosition;
     private bool wantShown;
     private object owner; // whoever is currently showing text, so others can't hide it by accident
+    private bool wasVisible;
+    private float charactersRevealed;
 
     private void Awake()
     {
@@ -76,8 +80,18 @@ public class PromptPopup : MonoBehaviour
     public void Show(object source, string text)
     {
         owner = source;
-        if (label != null && label.text != text) label.text = text;
+        if (label != null && label.text != text)
+        {
+            label.text = text;
+            RestartTyping();
+        }
         wantShown = true;
+    }
+
+    private void RestartTyping()
+    {
+        charactersRevealed = 0f;
+        if (label != null) label.maxVisibleCharacters = charactersPerSecond > 0f ? 0 : 99999;
     }
 
     /// <summary>Hides the popup, but only if "source" is the one currently showing it.</summary>
@@ -94,6 +108,17 @@ public class PromptPopup : MonoBehaviour
     {
         // Hidden while the settings menu is open or popups are turned off.
         bool visible = wantShown && PromptsEnabled && !MenuOptions.GamePaused;
+
+        // Retype the text every time the popup reappears, not just when the text changes.
+        if (visible && !wasVisible) RestartTyping();
+        wasVisible = visible;
+
+        // Typewriter: maxVisibleCharacters skips rich-text tags, so <b> etc. never show half-typed.
+        if (visible && label != null && charactersPerSecond > 0f && charactersRevealed < label.text.Length)
+        {
+            charactersRevealed += charactersPerSecond * Time.unscaledDeltaTime;
+            label.maxVisibleCharacters = Mathf.FloorToInt(charactersRevealed);
+        }
 
         // Unscaled time so it still slides away smoothly when the game pauses.
         float t = 1f - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);

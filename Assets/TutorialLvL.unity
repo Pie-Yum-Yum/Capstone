@@ -13731,6 +13731,7 @@ GameObject:
   - component: {fileID: 568107924}
   - component: {fileID: 568107926}
   - component: {fileID: 568107928}
+  - component: {fileID: 568107929}
   m_Layer: 8
   m_Name: MonsterBody
   m_TagString: Untagged
@@ -13813,6 +13814,51 @@ MonoBehaviour:
   hearingRadius: 3
   detectionChecksPerSecond: 10
   maxUnreachablePointRetries: 3
+--- !u!114 &568107929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 568107922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ee0b013940f8a44f845f6149833eed0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterAudio
+  loopClip: {fileID: 8300000, guid: 5bc719e4afcfdbe47b146eb834f2b1a8, type: 3}
+  stateBlendSpeed: 1.5
+  patrol:
+    loopVolume: 0.532
+    loopPitch: 1
+    calls:
+    - {fileID: 8300000, guid: c039701c83d639f4eadd8480c5a55dcd, type: 3}
+    - {fileID: 8300000, guid: 1adabf5bc2da41b46bf260fdf29d210a, type: 3}
+    - {fileID: 8300000, guid: 1adabf5bc2da41b46bf260fdf29d210a, type: 3}
+    - {fileID: 8300000, guid: fd59a8c387b260646bade5125eb88a4f, type: 3}
+    callInterval: {x: 8, y: 10}
+    callVolume: 0.8
+  investigate:
+    loopVolume: 0.55
+    loopPitch: 1.05
+    calls:
+    - {fileID: 8300000, guid: 41e97a8d9f6b2b04e9590fdb9ec035d0, type: 3}
+    - {fileID: 8300000, guid: 080fdc01d88bfd44e98dfc9adfa4af84, type: 3}
+    callInterval: {x: 2, y: 6}
+    callVolume: 0.8
+  chase:
+    loopVolume: 0.8
+    loopPitch: 1.15
+    calls:
+    - {fileID: 8300000, guid: bded4fd5ee6822a4d95e3ca7070c9640, type: 3}
+    - {fileID: 8300000, guid: c039701c83d639f4eadd8480c5a55dcd, type: 3}
+    callInterval: {x: 2.5, y: 5}
+    callVolume: 0.8
+  chaseStartClip: {fileID: 8300000, guid: 7a541ab98e4afb44abe289db3467992e, type: 3}
+  investigateStartClip: {fileID: 8300000, guid: 282ab6e488f075a4190fa1a6ba697ae4, type: 3}
+  stingerVolume: 1
+  minDistance: 2
+  maxDistance: 25
 --- !u!1001 &580680102
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16814,6 +16860,9 @@ MonoBehaviour:
   textureResolution: 512
   inkColor: {r: 0, g: 0, b: 0, a: 1}
   brushRadius: 3
+  fizzleGlowColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  fizzleGlowDuration: 0.25
+  fizzleFadeDuration: 0.35
 --- !u!114 &681402476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18491,6 +18540,7 @@ GameObject:
   - component: {fileID: 758339642}
   - component: {fileID: 758339646}
   - component: {fileID: 758339647}
+  - component: {fileID: 758339648}
   m_Layer: 0
   m_Name: PlayerCam
   m_TagString: MainCamera
@@ -18638,8 +18688,15 @@ MonoBehaviour:
   settingsMenuKey: 9
   animator: {fileID: 1585327362}
   SpellDrawingController: {fileID: 681402475}
-  flashlightOn: 1
+  spellbookAudio: {fileID: 0}
   flashlight: {fileID: 1672394457}
+  flashlightStartsOn: 0
+  flashlightOnClip: {fileID: 8300000, guid: 2159b63780e526841b46370ea28e7db7, type: 3}
+  flashlightOffClip: {fileID: 8300000, guid: 8b2b7dafffa91ff49bac9fb6b346fd2a, type: 3}
+  flashlightVolume: 0.7
+  flashlightIntensity: 20
+  flashlightBookIntensity: 1.67
+  flashlightFadeSpeed: 8
 --- !u!114 &758339647
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18657,6 +18714,35 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   playerCam: {fileID: 758339646}
+--- !u!114 &758339648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 758339641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85d3b2b85bc9eee42888857ffacfdbe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpellSystem.SpellbookAudio
+  drawingController: {fileID: 681402475}
+  openClip: {fileID: 8300000, guid: 98c4173fda1b16f42a7e3c3570b8fadb, type: 3}
+  closeClip: {fileID: 8300000, guid: 28963e51edc43a247914f9de7f3aeea9, type: 3}
+  bookVolume: 0.8
+  drawLoopClip: {fileID: 8300000, guid: ddca10e93013a724999b767030bc2cca, type: 3}
+  penDownClips: []
+  drawMaxVolume: 0.6
+  penDownVolume: 0.4
+  fullVolumePenSpeed: 1.5
+  drawPitchRange: {x: 0.9, y: 1.15}
+  drawAttack: 25
+  drawRelease: 12
+  castClip: {fileID: 8300000, guid: dbdbd6e1e0769c74eaa96d68400a849e, type: 3}
+  fizzleClip: {fileID: 8300000, guid: 3d0f061b1e72557458134c8d74956001, type: 3}
+  spellSounds: []
+  castVolume: 0.9
+  playCloseOnCast: 1
 --- !u!4 &760074557 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2632141459670335020, guid: 086435da4ce96f945b53ab198ecef3ea, type: 3}
@@ -20080,7 +20166,19 @@ MonoBehaviour:
   m_Value: 0
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1832253162}
+        m_TargetAssemblyTypeName: MenuOptions, Assembly-CSharp
+        m_MethodName: SliderValueChanged
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &806770795 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2632141459670335020, guid: 086435da4ce96f945b53ab198ecef3ea, type: 3}
@@ -28790,6 +28888,7 @@ MonoBehaviour:
   label: {fileID: 1037000576}
   hiddenOffset: 200
   slideSpeed: 12
+  charactersPerSecond: 60
 --- !u!1 &1140248188
 GameObject:
   m_ObjectHideFlags: 0
@@ -35491,6 +35590,7 @@ MonoBehaviour:
   playerMovement: {fileID: 1451024076}
   menuObject: {fileID: 1832253160}
   menuOptions: {fileID: 1832253162}
+  spellbookAudio: {fileID: 0}
 --- !u!114 &1402243270
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36254,7 +36354,7 @@ Transform:
   m_GameObject: {fileID: 1422828096}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.82906, y: 2.65565, z: 23.4}
+  m_LocalPosition: {x: -2.71, y: 2.65565, z: 23.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -36965,7 +37065,7 @@ Transform:
   m_GameObject: {fileID: 1451024068}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 45.54, y: 1.2, z: 53.71}
+  m_LocalPosition: {x: 44.85, y: 1.2, z: 54.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -37043,7 +37143,7 @@ MonoBehaviour:
   runSoundLifetime: 2.5
   crouchSoundLifetime: 0.75
   crouchSpeedThreshold: 3
-  crouchSoundRadius: 2
+  crouchSoundRadius: 5
 --- !u!81 &1451024078
 AudioListener:
   m_ObjectHideFlags: 0
@@ -45725,7 +45825,7 @@ GameObject:
   - component: {fileID: 1738409950}
   - component: {fileID: 1738409949}
   - component: {fileID: 1738409948}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: CheckpointTrigger 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45831,13 +45931,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1738409947}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 40.81, y: 0.75, z: 28.97}
-  m_LocalScale: {x: 4.8242, y: 2.5, z: 1}
+  m_LocalRotation: {x: -0, y: -0.7001906, z: -0, w: 0.71395594}
+  m_LocalPosition: {x: 15.226, y: 0.75, z: 41.9163}
+  m_LocalScale: {x: 8.737735, y: 2.5, z: 10.032045}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 922527531}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -88.885, z: 0}
 --- !u!1001 &1741423775
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -48953,6 +49053,7 @@ MonoBehaviour:
   label: {fileID: 1191592569}
   hiddenOffset: 200
   slideSpeed: 12
+  charactersPerSecond: 60
 --- !u!1 &1881819111
 GameObject:
   m_ObjectHideFlags: 0
@@ -52274,6 +52375,7 @@ MonoBehaviour:
   startingInk: 100
   inkPerPageWidth: 10
   regenPerSecond: 2
+  regenCapFraction: 0.35
   playerCam: {fileID: 758339646}
   fizzleRefundFraction: 0
   infiniteInk: 0
@@ -56531,6 +56633,71 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1001 &2135067895
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 152923545998461710, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_Name
+      value: LureUnlock
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 49.931664
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.55178046
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 50.869743
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9010756
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.43366194
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -51.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598807859500606445, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8765434657590236852, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: playerCamera
+      value: 
+      objectReference: {fileID: 758339645}
+    - target: {fileID: 8765434657590236852, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
+      propertyPath: spellDrawingController
+      value: 
+      objectReference: {fileID: 681402475}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e0d600ade9f2f1e4baae6e999a997f17, type: 3}
 --- !u!1001 &2142120435
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58139,6 +58306,9 @@ MonoBehaviour:
     mesh: {fileID: -2432090755550338912, guid: 1996569a873c4af4db0a5acc1bbc4de2, type: 3}
   - spellName: Menu
     mesh: {fileID: -2432090755550338912, guid: 7f0d9505339da2443b3bd401dabfd348, type: 3}
+  pageTurnClips:
+  - {fileID: 8300000, guid: d464a4d64fae5fb49b67d7a53435ab8a, type: 3}
+  pageTurnVolume: 0.7
 --- !u!64 &8989486247369813564
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -58252,3 +58422,4 @@ SceneRoots:
   - {fileID: 1423635619}
   - {fileID: 2009657984}
   - {fileID: 1422828097}
+  - {fileID: 2135067895}

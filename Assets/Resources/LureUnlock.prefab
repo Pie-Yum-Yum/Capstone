@@ -125,6 +125,9 @@ MonoBehaviour:
   noiseStrength: 0.25
   dissolveDuration: 0.25
   ParentObject: {fileID: 0}
+  dissolveClip: {fileID: 8300000, guid: 0fcccf79d71a73141a4cc5b5a1e16aef, type: 3}
+  dissolveVolume: 0.652
+  dissolveSoundMaxDistance: 20
 --- !u!64 &8837899032404314702
 MeshCollider:
   m_ObjectHideFlags: 0

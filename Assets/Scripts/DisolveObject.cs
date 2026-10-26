@@ -22,6 +22,13 @@ public class DissolveObject : MonoBehaviour, ICheckpointSaveable
     private float originalCutoffHeight;
     public GameObject ParentObject;
 
+    [Header("Audio (optional)")]
+    [Tooltip("Plays when the dissolve starts. Leave empty for a silent dissolve.")]
+    [SerializeField] private AudioClip dissolveClip;
+    [SerializeField, Range(0f, 1f)] private float dissolveVolume = 0.8f;
+    [Tooltip("Silent beyond this distance.")]
+    [SerializeField] private float dissolveSoundMaxDistance = 20f;
+
     public string SaveId => CheckpointSaveIdUtility.GetStableSaveId(this);
     public bool IsDestroyed => isDestroyed;
 
@@ -110,7 +117,30 @@ public class DissolveObject : MonoBehaviour, ICheckpointSaveable
     public void TriggerDissolve()
     {
         if (isDissolving || isDestroyed) return;
+        PlayDissolveSound();
         StartCoroutine(DissolveRoutine());
+    }
+
+    // Plays from a temporary object, because this one is deactivated when the dissolve ends and
+    // that would cut the sound off.
+    private void PlayDissolveSound()
+    {
+        if (dissolveClip == null) return;
+
+        GameObject soundObject = new GameObject($"{name} Dissolve Sound");
+        soundObject.transform.position = objectRenderer != null ? objectRenderer.bounds.center : transform.position;
+
+        AudioSource source = soundObject.AddComponent<AudioSource>();
+        source.clip = dissolveClip;
+        source.volume = dissolveVolume;
+        source.pitch = UnityEngine.Random.Range(0.95f, 1.05f);
+        source.spatialBlend = 1f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = 1.5f;
+        source.maxDistance = dissolveSoundMaxDistance;
+        source.Play();
+
+        Destroy(soundObject, dissolveClip.length / source.pitch + 0.1f);
     }
 
     public void ResetToOriginalCutoff()

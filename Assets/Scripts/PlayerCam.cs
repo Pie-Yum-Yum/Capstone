@@ -34,6 +34,13 @@ public class PlayerCam : MonoBehaviour
     public AudioClip flashlightOnClip;
     public AudioClip flashlightOffClip;
     [Range(0f, 1f)] public float flashlightVolume = 0.7f;
+    [Tooltip("Light intensity while the spellbook is closed.")]
+    public float flashlightIntensity = 3f;
+    [Tooltip("Light intensity while the spellbook is open (dimmed so the book is readable).")]
+    public float flashlightBookIntensity = 1.67f;
+    [Tooltip("How quickly the light dims/brightens when the book opens/closes. Higher = snappier.")]
+    public float flashlightFadeSpeed = 8f;
+    private Light flashlightLight;
     // Not serialized: the old serialized value could disagree with the object's real state,
     // which made the first F press "turn off" a light that was already off.
     [System.NonSerialized] public bool flashlightOn;
@@ -50,7 +57,12 @@ public class PlayerCam : MonoBehaviour
         if (spellbookAudio == null) spellbookAudio = FindAnyObjectByType<SpellbookAudio>(FindObjectsInactive.Include);
 
         flashlightOn = flashlightStartsOn;
-        if (flashlight != null) flashlight.SetActive(flashlightOn);
+        if (flashlight != null)
+        {
+            flashlight.SetActive(flashlightOn);
+            flashlightLight = flashlight.GetComponentInChildren<Light>(true);
+            if (flashlightLight != null) flashlightLight.intensity = TargetFlashlightIntensity();
+        }
         flashlightAudio = gameObject.AddComponent<AudioSource>();
         flashlightAudio.playOnAwake = false;
         flashlightAudio.spatialBlend = 0f;
@@ -69,6 +81,19 @@ public class PlayerCam : MonoBehaviour
         }
     }
 
+    private float TargetFlashlightIntensity()
+    {
+        return paused ? flashlightBookIntensity : flashlightIntensity;
+    }
+
+    private void UpdateFlashlightIntensity()
+    {
+        if (flashlightLight == null) return;
+        // Unscaled so it still settles while the Menu spell has time frozen.
+        float t = 1f - Mathf.Exp(-flashlightFadeSpeed * Time.unscaledDeltaTime);
+        flashlightLight.intensity = Mathf.Lerp(flashlightLight.intensity, TargetFlashlightIntensity(), t);
+    }
+
     private void CloseBook()
     {
         animator.SetTrigger("Trigger3");
@@ -79,6 +104,8 @@ public class PlayerCam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        UpdateFlashlightIntensity();
+
         if((Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(settingsMenuKey)) && MenuOptions.GamePaused){
             // Settings menu is open: Esc or the menu key acts like its Resume button.
             MenuOptions menuOptions = FindAnyObjectByType<MenuOptions>(FindObjectsInactive.Include);
