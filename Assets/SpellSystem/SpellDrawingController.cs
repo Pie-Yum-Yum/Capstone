@@ -250,6 +250,9 @@ namespace SpellSystem
         /// <summary>Wire this up to your "cast" button.</summary>
         public void AttemptCast()
         {
+            // Ignore repeat presses while the last fizzle is still fading.
+            if (fizzleRoutine != null) return;
+
             // TEMP DIAGNOSTIC - remove once casting is confirmed working.
             int totalPoints = gestureStrokes.Sum(s => s.Count);
             int totalKnownSamples = knownSpells.Sum(sp => sp.samples.Count);

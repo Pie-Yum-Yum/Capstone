@@ -1,11 +1,14 @@
 using System;
 using SaveSystem;
-using SpellSystem;
 using UnityEngine;
 
-// Walk-over ink refill. Needs a trigger collider; the Player (tagged "Player", with a Rigidbody)
-// collects it by walking into it. If a DissolveObject is on the same object it dissolves away,
-// otherwise it just disappears. Saved with checkpoints so collected pickups stay collected.
+// Walk-over mana potion: goes into the player's InkPotionInventory, to be drunk later with the use key.
+// Needs a trigger collider; the Player (tagged "Player", with a Rigidbody) collects it by walking
+// into it. If a DissolveObject is on the same object it dissolves away, otherwise it just disappears.
+// Saved with checkpoints so collected pickups stay collected.
+//
+// SETUP: empty GameObject with this + a trigger collider, with the potion model as a child that has
+// a PickupHover. The hover then moves only the model, not the collider.
 [RequireComponent(typeof(Collider))]
 public class InkPickup : MonoBehaviour, ICheckpointSaveable
 {
@@ -14,11 +17,6 @@ public class InkPickup : MonoBehaviour, ICheckpointSaveable
     {
         public bool isCollected;
     }
-
-    [Tooltip("How much ink this pickup gives.")]
-    public float inkAmount = 40f;
-    [Tooltip("If false, the pickup is left in the world when the player's ink is already full.")]
-    public bool collectWhenFull = false;
 
     private bool isCollected;
 
@@ -30,21 +28,19 @@ public class InkPickup : MonoBehaviour, ICheckpointSaveable
         GetComponent<Collider>().isTrigger = true;
     }
 
-    // Stay (not Enter) so a player standing on it while full still collects it once they've used some ink.
+    // Stay (not Enter) so a player standing on it with a full inventory still collects it once they've used a potion.
     private void OnTriggerStay(Collider other)
     {
         if (isCollected || !other.CompareTag("Player")) return;
 
-        InkManager ink = InkManager.Instance;
-        if (ink == null)
+        InkPotionInventory inventory = InkPotionInventory.Instance;
+        if (inventory == null)
         {
-            Debug.LogWarning("InkPickup touched but there's no InkManager in the scene.");
+            Debug.LogWarning("InkPickup touched but there's no InkPotionInventory in the scene.");
             return;
         }
 
-        if (!collectWhenFull && ink.CurrentInk >= ink.MaxInk) return;
-
-        ink.AddInk(inkAmount);
+        if (!inventory.TryAddPotion()) return; // carrying the max: leave it in the world
         isCollected = true;
 
         if (TryGetComponent(out DissolveObject dissolve))

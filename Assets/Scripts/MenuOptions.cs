@@ -79,24 +79,59 @@ public class MenuOptions : MonoBehaviour
     }
 
     // ---- ASCII ----
-    private const string AsciiPrefKey = "Settings.AsciiCharCount";
-    private const int AsciiMinChars = 5;
-    private const int AsciiMaxChars = 20;
-    private static readonly int CharCountId = Shader.PropertyToID("_CharCount");
-    private float originalCharCount;
+    // The "Screen Effect" slider drives the ASCII shader's luminance gamma.
+    private const string AsciiGammaPrefKey = "Settings.AsciiGamma";
+    private const float AsciiGammaMin = 0f;
+    private const float AsciiGammaMax = 0.5f;
+    private static readonly int GammaId = Shader.PropertyToID("_Gamma");
+    private bool initializingSliders;
 
     private void Awake()
     {
-        if (asciiMaterial != null)
-        {
-            originalCharCount = asciiMaterial.GetFloat(CharCountId);
-            float savedChars = PlayerPrefs.GetFloat(AsciiPrefKey, Mathf.Clamp(originalCharCount, AsciiMinChars, AsciiMaxChars));
-            asciiMaterial.SetFloat(CharCountId, savedChars);
-        }
+        ApplySavedAsciiGamma();
     }
+
+    // Also called by PlayerCam on level start, because this object starts inactive and its Awake
+    // doesn't run until the settings menu is first opened.
+    public void ApplySavedAsciiGamma()
+    {
+        if (asciiMaterial == null) return;
+
+#if UNITY_EDITOR
+        RestoreAsciiMaterialAfterPlayMode(asciiMaterial);
+#endif
+        float fallback = Mathf.Clamp(asciiMaterial.GetFloat(GammaId), AsciiGammaMin, AsciiGammaMax);
+        AsciiAffector = Mathf.Clamp(PlayerPrefs.GetFloat(AsciiGammaPrefKey, fallback), AsciiGammaMin, AsciiGammaMax);
+        asciiMaterial.SetFloat(GammaId, AsciiAffector);
+    }
+
+#if UNITY_EDITOR
+    // In the Editor, runtime SetFloat writes straight into the Ascii.mat asset.
+    // Put the original back so playing doesn't leave the material modified in git.
+    private static Material restoringMaterial;
+
+    private static void RestoreAsciiMaterialAfterPlayMode(Material material)
+    {
+        if (restoringMaterial == material) return;
+        restoringMaterial = material;
+
+        float original = material.GetFloat(GammaId);
+        void Restore(UnityEditor.PlayModeStateChange change)
+        {
+            if (change != UnityEditor.PlayModeStateChange.ExitingPlayMode) return;
+            material.SetFloat(GammaId, original);
+            restoringMaterial = null;
+            UnityEditor.EditorApplication.playModeStateChanged -= Restore;
+        }
+        UnityEditor.EditorApplication.playModeStateChanged += Restore;
+    }
+#endif
 
     private void Start()
     {
+        // Changing a slider's range can fire On Value Changed, which would overwrite saved settings.
+        initializingSliders = true;
+
         // Configure and fill the sliders without firing SliderValueChanged.
         if (volumeSlider != null)
         {
@@ -112,13 +147,16 @@ public class MenuOptions : MonoBehaviour
 
         if (AsciiSlider != null)
         {
-            AsciiSlider.minValue = AsciiMinChars;
-            AsciiSlider.maxValue = AsciiMaxChars;
-            AsciiSlider.wholeNumbers = true;
-            if (asciiMaterial != null) AsciiSlider.SetValueWithoutNotify(asciiMaterial.GetFloat(CharCountId));
+            AsciiSlider.wholeNumbers = false;
+            AsciiSlider.minValue = AsciiGammaMin;
+            AsciiSlider.maxValue = AsciiGammaMax;
+            AsciiSlider.SetValueWithoutNotify(AsciiAffector);
+            if (AsciiCurrentValue != null) AsciiCurrentValue.GetComponent<TextMeshProUGUI>().text = AsciiAffector.ToString("0.00");
         }
 
         if (popupsToggle != null) popupsToggle.SetIsOnWithoutNotify(PromptPopup.PromptsEnabled);
+
+        initializingSliders = false;
     }
 
     // Hook the popups Toggle's On Value Changed up to this (pick it from the "Dynamic bool" list).
@@ -128,6 +166,8 @@ public class MenuOptions : MonoBehaviour
     }
 
     public void SliderValueChanged(){
+        if (initializingSliders) return;
+
         // Called by every settings slider's On Value Changed. Each one is optional.
         if (volumeSlider != null)
         {
@@ -149,14 +189,14 @@ public class MenuOptions : MonoBehaviour
         if (AsciiSlider != null)
         {
             AsciiAffector = AsciiSlider.value;
-            PlayerPrefs.SetFloat(AsciiPrefKey, AsciiAffector);
-            if (asciiMaterial != null) asciiMaterial.SetFloat(CharCountId, AsciiAffector);
+            PlayerPrefs.SetFloat(AsciiGammaPrefKey, AsciiAffector);
+            if (asciiMaterial != null) asciiMaterial.SetFloat(GammaId, AsciiAffector);
         }
 
         VolumeCurrentValue.GetComponent<TextMeshProUGUI>().text = (volumeLvl * 100).ToString("0");
         //BrightnessCurrentValue.GetComponent<TextMeshProUGUI>().text = brightnessLvl.ToString("0");
         SensitivityCurrentValue.GetComponent<TextMeshProUGUI>().text = (sensitivityLvl*100).ToString("0");
-        AsciiCurrentValue.GetComponent<TextMeshProUGUI>().text = AsciiAffector.ToString("0");
+        AsciiCurrentValue.GetComponent<TextMeshProUGUI>().text = AsciiAffector.ToString("0.00");
 
 
     }
@@ -226,12 +266,6 @@ public class MenuOptions : MonoBehaviour
     private void OnDestroy()
     {
         PlayerPrefs.Save();
-
-#if UNITY_EDITOR
-        // In the Editor, runtime SetFloat writes straight into the Ascii.mat asset.
-        // Put the original back so playing doesn't leave the material modified in git.
-        if (asciiMaterial != null) asciiMaterial.SetFloat(CharCountId, originalCharCount);
-#endif
 
         if (GamePaused)
         {

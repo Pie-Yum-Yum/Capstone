@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SpellSystem
 {
@@ -18,11 +20,57 @@ namespace SpellSystem
         [Tooltip("Plays each spell's release sound. Auto-found in the scene if left empty.")]
         public SpellbookAudio spellbookAudio;
 
+        [Header("Spell ready display")]
+        [Tooltip("The centre dot. Changes colour while a spell is ready to cast.")]
+        public Graphic readyDot;
+        [Tooltip("Text under the dot (TextMeshPro or legacy Text). Blank unless a spell is ready to cast.")]
+        public Graphic readyLabel;
+        public Color idleDotColor = Color.white;
+        public Color fireballDotColor = Color.red;
+        public Color lureDotColor = Color.yellow;
+        public Color lockDotColor = Color.grey;
+        [Tooltip("Names shown in \"Ready to cast: ...\".")]
+        public string fireballDisplayName = "Fireball";
+        public string lureDisplayName = "Lure";
+        public string lockDisplayName = "Lock";
+
         private door currentHighlightedDoor;
+        private string displayedSpell;
 
         private void Start()
         {
             if (spellbookAudio == null) spellbookAudio = FindAnyObjectByType<SpellbookAudio>(FindObjectsInactive.Include);
+            UpdateReadyDisplay();
+        }
+
+        // Follows PrimedSpell, so casting, cancelling and priming a different spell all update it.
+        private void UpdateReadyDisplay()
+        {
+            displayedSpell = PrimedSpell;
+
+            Color dotColor = idleDotColor;
+            string spellName = null;
+            switch (PrimedSpell)
+            {
+                case "Fireball":
+                    dotColor = fireballDotColor;
+                    spellName = fireballDisplayName;
+                    break;
+                case "Noise":
+                    dotColor = lureDotColor;
+                    spellName = lureDisplayName;
+                    break;
+                case "Lock":
+                    dotColor = lockDotColor;
+                    spellName = lockDisplayName;
+                    break;
+            }
+
+            if (readyDot != null) readyDot.color = dotColor;
+
+            string labelText = spellName == null ? "" : $"Ready to cast: {spellName}";
+            if (readyLabel is TMP_Text tmpLabel) tmpLabel.text = labelText;
+            else if (readyLabel is Text legacyLabel) legacyLabel.text = labelText;
         }
 
         private void PlayRelease(string spellName)
@@ -172,7 +220,7 @@ namespace SpellSystem
                     if (Input.GetMouseButtonDown(0))
                         {
                             GameObject fireball = Instantiate(Resources.Load("Fireball") as GameObject, context.castOrigin.position + context.castOrigin.forward * 2, Quaternion.identity);
-                            fireball.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 100f);
+                            fireball.GetComponent<Rigidbody>().AddForce(context.castOrigin.forward * 300f);
                             PlayRelease("Fireball");
                             PrimedSpell = null;
                         }
@@ -204,6 +252,8 @@ namespace SpellSystem
 
                 break;
             }
+
+            if (PrimedSpell != displayedSpell) UpdateReadyDisplay();
         }
     }
 }

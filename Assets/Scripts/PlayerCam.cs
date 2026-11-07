@@ -20,6 +20,10 @@ public class PlayerCam : MonoBehaviour
     public bool paused;
     [Tooltip("Opens/closes the settings menu directly, without drawing the Menu spell.")]
     public KeyCode settingsMenuKey = KeyCode.Tab;
+    [Tooltip("Casts the drawn spell while the spellbook is open (same as the Cast button).")]
+    public KeyCode castKey = KeyCode.C;
+    [Tooltip("Clears the page while the spellbook is open (same as the Clear button).")]
+    public KeyCode clearKey = KeyCode.X;
     public Animator animator;
     public SpellDrawingController SpellDrawingController;
     [Tooltip("Optional. Plays book open/close sounds. Auto-found if left empty.")]
@@ -53,6 +57,10 @@ public class PlayerCam : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         sensitivityMultiplier = MenuOptions.SensitivityMultiplier(MenuOptions.SavedSensitivity);
+
+        // The settings menu starts inactive, so it can't apply its own saved screen effect on load.
+        MenuOptions menuOptions = FindAnyObjectByType<MenuOptions>(FindObjectsInactive.Include);
+        if (menuOptions != null) menuOptions.ApplySavedAsciiGamma();
 
         if (spellbookAudio == null) spellbookAudio = FindAnyObjectByType<SpellbookAudio>(FindObjectsInactive.Include);
 
@@ -136,6 +144,13 @@ public class PlayerCam : MonoBehaviour
                 CloseBook();
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+            }
+        }
+        if(paused && !MenuOptions.GamePaused && SpellDrawingController != null){
+            if(Input.GetKeyDown(castKey)){
+                SpellDrawingController.AttemptCast();
+            }else if(Input.GetKeyDown(clearKey)){
+                SpellDrawingController.ClearPage();
             }
         }
         if(!paused && !MenuOptions.GamePaused){

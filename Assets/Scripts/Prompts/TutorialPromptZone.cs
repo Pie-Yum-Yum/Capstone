@@ -28,6 +28,9 @@ public class TutorialPromptZone : MonoBehaviour
     private bool shownBefore;
     private float shownTime;
 
+    // The zone whose hint is up. Leaving a zone doesn't end its hint, so a new zone has to end the old one.
+    private static TutorialPromptZone activeZone;
+
     private void Reset()
     {
         GetComponent<Collider>().isTrigger = true;
@@ -37,6 +40,12 @@ public class TutorialPromptZone : MonoBehaviour
     {
         if (!other.CompareTag("Player") || completed) return;
         if (showOnlyOnce && shownBefore) return;
+
+        if (showPrompt && !string.IsNullOrEmpty(promptText))
+        {
+            if (activeZone != null && activeZone != this) activeZone.StopShowing();
+            activeZone = this;
+        }
 
         playerInside = true;
         shownBefore = true;
@@ -77,7 +86,13 @@ public class TutorialPromptZone : MonoBehaviour
     private void Finish()
     {
         completed = true;
+        StopShowing();
+    }
+
+    private void StopShowing()
+    {
         playerInside = false;
+        if (activeZone == this) activeZone = null;
         HidePopup();
     }
 
@@ -89,6 +104,7 @@ public class TutorialPromptZone : MonoBehaviour
 
     private void OnDisable()
     {
+        if (activeZone == this) activeZone = null;
         HidePopup();
     }
 }

@@ -10,7 +10,7 @@ Shader "Custom/Ascii Post"
         _CharCount    ("Ramp Character Count", Float) = 10
         _AtlasRampCount ("Atlas Ramp Glyphs (as baked)", Float) = 10
         _CellSize     ("Cell Size (px)", Float) = 8
-        _Gamma        ("Luminance Gamma", Range(0.2, 3)) = 1
+        _Gamma        ("Luminance Gamma", Range(0, 0.5)) = 0.2
         _EdgeStrength ("Edge Strength", Range(0, 4)) = 1
         _EdgeThreshold("Edge Threshold", Range(0, 1)) = 0.15
         _ColorBlend   ("Scene Color Blend", Range(0, 1)) = 1
@@ -119,7 +119,8 @@ Shader "Custom/Ascii Post"
 
                 float3 cellCol = CellColor(cellId, screen);
                 float  lum     = saturate(Luminance(cellCol));
-                lum = pow(lum, _Gamma);
+                // Gamma can be 0, and pow(0, 0) is undefined, so keep lum above 0.
+                lum = pow(max(lum, 0.0001), _Gamma);
 
                 // --- density glyph ---
                 // _CharCount = how many brightness levels to use (driven by the settings slider).

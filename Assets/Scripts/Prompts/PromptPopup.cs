@@ -26,6 +26,32 @@ public class PromptPopup : MonoBehaviour
 
     private static readonly Dictionary<Channel, PromptPopup> popups = new Dictionary<Channel, PromptPopup>();
 
+    // ---- One popup at a time, across every channel ----
+    // Everyone currently asking to show text, oldest first. Only the newest request is on screen, and
+    // showing it instantly clears any other popup so they can't overlap. Sources re-assert every frame,
+    // so a repeat of the same text doesn't count as new. When the newest is hidden, the next one returns.
+    private class Request
+    {
+        public object source;
+        public string text;
+        public PromptPopup popup;
+    }
+
+    private static readonly List<Request> requests = new List<Request>();
+    private static Request active;
+
+    private static void RefreshActive()
+    {
+        active = requests.Count > 0 ? requests[requests.Count - 1] : null;
+        if (active == null) return; // nothing new: the last popup just slides away
+
+        foreach (PromptPopup other in popups.Values)
+        {
+            if (other != null && other != active.popup) other.SnapHidden();
+        }
+        active.popup.SetText(active.text);
+    }
+
     /// <summary>Finds the popup for a channel, or any popup if that channel has none.</summary>
     public static PromptPopup Get(Channel channel)
     {
@@ -50,8 +76,6 @@ public class PromptPopup : MonoBehaviour
     private CanvasGroup canvasGroup;
     private Vector2 shownPosition;
     private Vector2 hiddenPosition;
-    private bool wantShown;
-    private object owner; // whoever is currently showing text, so others can't hide it by accident
     private bool wasVisible;
     private float charactersRevealed;
 
@@ -74,18 +98,48 @@ public class PromptPopup : MonoBehaviour
     private void OnDestroy()
     {
         if (popups.TryGetValue(channel, out PromptPopup popup) && popup == this) popups.Remove(channel);
+
+        requests.RemoveAll(request => request.popup == this);
+        RefreshActive();
     }
 
-    /// <summary>Shows text. "source" is whoever asked (an InteractPrompt, a hint zone...).</summary>
+    /// <summary>
+    /// Shows text. "source" is whoever asked (an InteractPrompt, a hint zone...). Safe to call every
+    /// frame: only a new source or new text takes over the screen.
+    /// </summary>
     public void Show(object source, string text)
     {
-        owner = source;
+        // Plain loop: this runs every frame, so no allocating lambda.
+        int index = -1;
+        for (int i = 0; i < requests.Count; i++)
+        {
+            if (requests[i].source == source) { index = i; break; }
+        }
+
+        if (index >= 0)
+        {
+            if (requests[index].popup == this && requests[index].text == text) return;
+            requests.RemoveAt(index);
+        }
+
+        requests.Add(new Request { source = source, text = text, popup = this });
+        RefreshActive();
+    }
+
+    private void SetText(string text)
+    {
         if (label != null && label.text != text)
         {
             label.text = text;
             RestartTyping();
         }
-        wantShown = true;
+    }
+
+    private void SnapHidden()
+    {
+        rect.anchoredPosition = hiddenPosition;
+        canvasGroup.alpha = 0f;
+        wasVisible = false;
     }
 
     private void RestartTyping()
@@ -94,20 +148,18 @@ public class PromptPopup : MonoBehaviour
         if (label != null) label.maxVisibleCharacters = charactersPerSecond > 0f ? 0 : 99999;
     }
 
-    /// <summary>Hides the popup, but only if "source" is the one currently showing it.</summary>
+    /// <summary>Withdraws "source"'s text. Anything other sources are showing is left alone.</summary>
     public void Hide(object source)
     {
-        if (owner != source) return;
-        owner = null;
-        wantShown = false;
+        if (requests.RemoveAll(r => r.source == source) > 0) RefreshActive();
     }
 
-    public bool IsShowing(object source) => wantShown && owner == source;
+    public bool IsShowing(object source) => active != null && active.popup == this && active.source == source;
 
     private void Update()
     {
         // Hidden while the settings menu is open or popups are turned off.
-        bool visible = wantShown && PromptsEnabled && !MenuOptions.GamePaused;
+        bool visible = active != null && active.popup == this && PromptsEnabled && !MenuOptions.GamePaused;
 
         // Retype the text every time the popup reappears, not just when the text changes.
         if (visible && !wasVisible) RestartTyping();
