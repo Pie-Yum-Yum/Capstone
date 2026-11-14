@@ -22,7 +22,9 @@ public class PlayerMovement : MonoBehaviour
     bool isSprinting;
     public bool IsSprinting => isSprinting;
     public bool hidingSpot;
-    
+    // Set by SpellMap while the Eye map is held up: crouch speed, no sprinting.
+    [HideInInspector] public bool forceCrouchSpeed;
+
 
     Vector3 moveDirection;
     Rigidbody rb;
@@ -45,7 +47,7 @@ public class PlayerMovement : MonoBehaviour
         myInput();
         rb.linearDamping = drag;
         isCrouching = Input.GetKey(KeyCode.LeftControl);
-        isSprinting = Input.GetKey(KeyCode.LeftShift) && !isCrouching;
+        isSprinting = Input.GetKey(KeyCode.LeftShift) && !isCrouching && !forceCrouchSpeed;
         if (hidingSpot)
         {
             isCrouching = true;
@@ -63,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
         CameraPos.transform.localPosition = Vector3.Lerp(CameraPos.transform.localPosition, targetCameraPos, Time.deltaTime * speedLerpTime);
 
         float targetMultiplier = 1f;
-        if (isCrouching)
+        if (isCrouching || forceCrouchSpeed)
         {
             targetMultiplier = crouchSpeedMultiplier;
         }

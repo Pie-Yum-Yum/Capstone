@@ -20,6 +20,9 @@ namespace SpellSystem
         [Tooltip("Plays each spell's release sound. Auto-found in the scene if left empty.")]
         public SpellbookAudio spellbookAudio;
 
+        [Tooltip("The Eye spell's map. Auto-found in the scene if left empty.")]
+        public SpellMap spellMap;
+
         [Header("Spell ready display")]
         [Tooltip("The centre dot. Changes colour while a spell is ready to cast.")]
         public Graphic readyDot;
@@ -89,9 +92,18 @@ namespace SpellSystem
         }
         public void CastEyeSpell(SpellCastContext incomingContext)
         {
+            // Not a primed spell: the book goes away and the map comes straight up.
             context = incomingContext;
-            PrimedSpell = "Eye";
+            PrimedSpell = null;
             animator.SetTrigger("Trigger2");
+            PlayerCam.paused = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            SpellDrawingController.ClearPage();
+
+            if (spellMap == null) spellMap = FindAnyObjectByType<SpellMap>(FindObjectsInactive.Include);
+            if (spellMap != null) spellMap.Open();
+            else Debug.LogWarning("Eye cast but there's no SpellMap in the scene.");
         }
         public void CastFireballSpell(SpellCastContext incomingContext)
         {

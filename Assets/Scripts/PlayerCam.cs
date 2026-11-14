@@ -28,6 +28,8 @@ public class PlayerCam : MonoBehaviour
     public SpellDrawingController SpellDrawingController;
     [Tooltip("Optional. Plays book open/close sounds. Auto-found if left empty.")]
     public SpellbookAudio spellbookAudio;
+    [Tooltip("The Eye spell's map. Esc closes it before it opens the book. Auto-found if left empty.")]
+    public SpellMap spellMap;
 
     [Header("Flashlight")]
     public GameObject flashlight;
@@ -63,6 +65,7 @@ public class PlayerCam : MonoBehaviour
         if (menuOptions != null) menuOptions.ApplySavedAsciiGamma();
 
         if (spellbookAudio == null) spellbookAudio = FindAnyObjectByType<SpellbookAudio>(FindObjectsInactive.Include);
+        if (spellMap == null) spellMap = FindAnyObjectByType<SpellMap>(FindObjectsInactive.Include);
 
         flashlightOn = flashlightStartsOn;
         if (flashlight != null)
@@ -132,7 +135,11 @@ public class PlayerCam : MonoBehaviour
             }
             return;
         }
-        if(Input.GetKeyDown(KeyCode.Escape)){
+        if(Input.GetKeyDown(KeyCode.Escape) && spellMap != null && spellMap.IsOpen){
+            // Map is up: Esc lowers it. The next Esc opens the book as usual.
+            spellMap.Close();
+        }
+        else if(Input.GetKeyDown(KeyCode.Escape)){
             paused = !paused;
             if(paused){
                 animator.SetTrigger("Trigger1");

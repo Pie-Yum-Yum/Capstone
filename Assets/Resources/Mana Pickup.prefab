@@ -120,6 +120,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 643862000d29d4442af3651ff99d0a18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InkPickup
+  pickupClip: {fileID: 8300000, guid: d5e20408f4cb0064aaf30a5e181eba78, type: 3}
+  pickupVolume: 1
 --- !u!65 &3273424092051375382
 BoxCollider:
   m_ObjectHideFlags: 0

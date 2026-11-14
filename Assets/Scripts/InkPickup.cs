@@ -18,6 +18,11 @@ public class InkPickup : MonoBehaviour, ICheckpointSaveable
         public bool isCollected;
     }
 
+    [Header("Sound")]
+    [Tooltip("Optional. Played where the pickup was collected.")]
+    public AudioClip pickupClip;
+    [Range(0f, 1f)] public float pickupVolume = 1f;
+
     private bool isCollected;
 
     public bool IsCollected => isCollected;
@@ -42,6 +47,9 @@ public class InkPickup : MonoBehaviour, ICheckpointSaveable
 
         if (!inventory.TryAddPotion()) return; // carrying the max: leave it in the world
         isCollected = true;
+
+        // Plays from its own temporary object, so hiding/dissolving the pickup doesn't cut it off.
+        if (pickupClip != null) AudioSource.PlayClipAtPoint(pickupClip, transform.position, pickupVolume);
 
         if (TryGetComponent(out DissolveObject dissolve))
         {

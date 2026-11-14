@@ -28,7 +28,13 @@ public class InkPotionInventory : MonoBehaviour, ICheckpointSaveable
     [Tooltip("HUD sprite objects, one per potion slot. Turned on as potions are picked up, and off from the last one as they're used.")]
     public GameObject[] potionIcons;
 
+    [Header("Sound")]
+    [Tooltip("Optional. Played when the player drinks a potion.")]
+    public AudioClip useClip;
+    [Range(0f, 1f)] public float useVolume = 1f;
+
     private int potionCount;
+    private AudioSource audioSource;
 
     public int PotionCount => potionCount;
     public bool IsFull => potionCount >= maxPotions;
@@ -43,6 +49,11 @@ public class InkPotionInventory : MonoBehaviour, ICheckpointSaveable
         }
         Instance = this;
         UpdateIcons();
+
+        // 2D, since the player is the one drinking it.
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
     }
 
     private void OnDestroy()
@@ -71,6 +82,7 @@ public class InkPotionInventory : MonoBehaviour, ICheckpointSaveable
 
         ink.AddInk(ink.MaxInk * restoreFraction);
         SetCount(potionCount - 1);
+        if (useClip != null && audioSource != null) audioSource.PlayOneShot(useClip, useVolume);
         return true;
     }
 
