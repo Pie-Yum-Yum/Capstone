@@ -13,3 +13,10 @@ corner -- offset y 1.6 z 1.1
 overhang - regular -- offset z -0.5
 
 overhang - corner -- offset x 0.6 || z 0.5
+
+
+trigger1 - open book
+trigger2 - cast spell close
+trigger3 - close book normal
+trigger4 - cycle page
+trigger5 - minimap cast

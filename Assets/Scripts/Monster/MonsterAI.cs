@@ -319,6 +319,13 @@ public class MonsterAI : MonoBehaviour
         // if (animator != null) animator.SetTrigger("Attack");
         Debug.Log("Monster caught the player.");
 
+        // Death screen if the scene has one; otherwise the old behaviour of reloading straight away.
+        if (DeathScreen.Instance != null)
+        {
+            DeathScreen.Instance.Show(player);
+            return;
+        }
+
         if (GameSaveManager.Instance != null && GameSaveManager.Instance.TryLoadLatestSave(player))
         {
             return;

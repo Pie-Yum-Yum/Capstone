@@ -17,6 +17,12 @@ public class NoteBookPage : MonoBehaviour, ICheckpointSaveable
     public string SpellName;
     public float interactDistance = 3f;
     public KeyCode interactKey = KeyCode.E;
+    [Tooltip("Also collect the page when the player walks into it. Needs a collider with Is Trigger ticked on this same object. Look + interact key still works.")]
+    public bool pickUpOnWalkOver = false;
+    [Tooltip("Popup shown when this page is collected, e.g. \"Minimap spell unlocked!\". Leave empty for no popup.")]
+    [TextArea] public string unlockMessage = "";
+    [Tooltip("Seconds the unlock popup stays up.")]
+    public float unlockMessageSeconds = 2f;
     private bool isPlayerLookingAtPage = false;
     private Material material;
     private Renderer objectRenderer;
@@ -147,7 +153,7 @@ public class NoteBookPage : MonoBehaviour, ICheckpointSaveable
     // Update is called once per frame
     void Update()
     {
-        if (isCollected || playerCamera == null)
+        if (isCollected || playerCamera == null || DeathScreen.InputBlocked)
         {
             return;
         }
@@ -175,6 +181,14 @@ public class NoteBookPage : MonoBehaviour, ICheckpointSaveable
             }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (pickUpOnWalkOver && !isCollected && other.CompareTag("Player"))
+        {
+            CollectPage();
+        }
+    }
+
     private void CollectPage()
     {
         if (isCollected)
@@ -190,6 +204,12 @@ public class NoteBookPage : MonoBehaviour, ICheckpointSaveable
 
         Debug.Log($"Unlocked spell: {SpellName}");
         //SetPageColor(Color.blue);
+
+        if (!string.IsNullOrEmpty(unlockMessage))
+        {
+            PromptPopup popup = PromptPopup.Get(PromptPopup.Channel.Hint);
+            if (popup != null) popup.ShowFor(this, unlockMessage, unlockMessageSeconds);
+        }
 
         if (TryGetComponent<DissolveObject>(out DissolveObject dissolveObject))
         {

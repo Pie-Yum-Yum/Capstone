@@ -45,7 +45,7 @@ public class CyclePage : MonoBehaviour
         bool paused = playerCam.paused;
         meshCollider.enabled = paused;
 
-        if (!paused || !Input.GetMouseButtonDown(0)) return;
+        if (!paused || !Input.GetMouseButtonDown(0) || DeathScreen.InputBlocked) return;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 3f) && hit.transform.IsChildOf(transform))

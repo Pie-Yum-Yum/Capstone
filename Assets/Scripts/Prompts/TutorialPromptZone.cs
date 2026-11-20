@@ -63,7 +63,7 @@ public class TutorialPromptZone : MonoBehaviour
     {
         if (!playerInside) return;
 
-        if (completeOnKey != KeyCode.None && Input.GetKeyDown(completeOnKey))
+        if (completeOnKey != KeyCode.None && Input.GetKeyDown(completeOnKey) && !DeathScreen.InputBlocked)
         {
             Finish();
             return;

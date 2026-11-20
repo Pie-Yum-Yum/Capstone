@@ -63,7 +63,7 @@ public class InkPotionInventory : MonoBehaviour, ICheckpointSaveable
 
     private void Update()
     {
-        if (Input.GetKeyDown(useKey) && !MenuOptions.GamePaused) TryUsePotion();
+        if (Input.GetKeyDown(useKey) && !MenuOptions.GamePaused && !DeathScreen.InputBlocked) TryUsePotion();
     }
 
     /// <summary>Adds a potion. Returns false if the player is already carrying the most they can.</summary>

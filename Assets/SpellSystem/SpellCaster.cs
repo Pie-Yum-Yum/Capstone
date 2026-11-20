@@ -76,6 +76,15 @@ namespace SpellSystem
             else if (readyLabel is Text legacyLabel) legacyLabel.text = labelText;
         }
 
+        // The normal "cast and close the book" animation. Clears any map raise/lower trigger that never got used
+        // first, so a stale one can't hijack it.
+        private void PlayCastAnimation()
+        {
+            if (spellMap == null) spellMap = FindAnyObjectByType<SpellMap>(FindObjectsInactive.Include);
+            if (spellMap != null) spellMap.ClearHandTriggers();
+            animator.SetTrigger("Trigger2");
+        }
+
         private void PlayRelease(string spellName)
         {
             if (spellbookAudio != null) spellbookAudio.PlayRelease(spellName);
@@ -85,7 +94,7 @@ namespace SpellSystem
         {
             context = incomingContext;
             PrimedSpell = "Lock";
-            animator.SetTrigger("Trigger2");
+            PlayCastAnimation();
             PlayerCam.paused = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -95,21 +104,24 @@ namespace SpellSystem
             // Not a primed spell: the book goes away and the map comes straight up.
             context = incomingContext;
             PrimedSpell = null;
-            animator.SetTrigger("Trigger2");
             PlayerCam.paused = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             SpellDrawingController.ClearPage();
 
             if (spellMap == null) spellMap = FindAnyObjectByType<SpellMap>(FindObjectsInactive.Include);
-            if (spellMap != null) spellMap.Open();
-            else Debug.LogWarning("Eye cast but there's no SpellMap in the scene.");
+            bool opened = spellMap != null && spellMap.Open();
+            if (spellMap == null) Debug.LogWarning("Eye cast but there's no SpellMap in the scene.");
+
+            // The map's raise animation replaces the normal cast. Firing both in the same frame made them
+            // fight (every transition is from Any State), so only fall back to the cast if the map has none.
+            if (!opened || !spellMap.HasRaiseAnimation) PlayCastAnimation();
         }
         public void CastFireballSpell(SpellCastContext incomingContext)
         {
             context = incomingContext;
             PrimedSpell = "Fireball";
-            animator.SetTrigger("Trigger2");
+            PlayCastAnimation();
             PlayerCam.paused = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -119,7 +131,7 @@ namespace SpellSystem
         {
             context = incomingContext;
             PrimedSpell = "Noise";
-            animator.SetTrigger("Trigger2");
+            PlayCastAnimation();
             PlayerCam.paused = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -129,7 +141,7 @@ namespace SpellSystem
         {
             context = incomingContext;
             PrimedSpell = "Menu";
-            animator.SetTrigger("Trigger2");
+            PlayCastAnimation();
             //PlayerCam.paused = false;
             //Cursor.lockState = CursorLockMode.Locked;
             //Cursor.visible = false;
@@ -137,8 +149,24 @@ namespace SpellSystem
         }
         
 
+        /// <summary>Drops whatever spell is primed (used by the death screen).</summary>
+        public void CancelPrimedSpell()
+        {
+            PrimedSpell = null;
+            if (currentHighlightedDoor != null)
+            {
+                currentHighlightedDoor.SetSpellHighlight(false, Color.black);
+                currentHighlightedDoor.lookingAtDoor = false;
+                currentHighlightedDoor = null;
+            }
+            UpdateReadyDisplay();
+        }
+
         void Update()
         {
+            // Dead: no throwing or locking with the clicks that press the death screen's buttons.
+            if (DeathScreen.InputBlocked) return;
+
             // HEY 
             // whem adding new spells, add a new case here and make sure to set PrimedSpell to the name of the spell in the CastSpell function above
             // also add an entry in the spell database for the new spell and ALSO call it in the editor from the SpellCaster GameObject!!!!

@@ -28,6 +28,8 @@ public class SpellMap : MonoBehaviour
     public string raiseTrigger = "";
     [Tooltip("Trigger fired when the map closes. Leave empty until the animation exists.")]
     public string lowerTrigger = "";
+    [Tooltip("Other triggers on the hands animator (cast, open/close book...). Cleared whenever the map raises or lowers so they can't fight it.")]
+    public string[] otherHandTriggers = { "Trigger1", "Trigger2", "Trigger3" };
 
     [Header("Sound")]
     [Tooltip("Optional. Played when the map starts drawing.")]
@@ -60,6 +62,20 @@ public class SpellMap : MonoBehaviour
     private float smudge = 1f;
 
     public bool IsOpen => isOpen;
+
+    /// <summary>True when opening plays its own hands animation, so the caster shouldn't fire the normal cast one.</summary>
+    public bool HasRaiseAnimation => handsAnimator != null && !string.IsNullOrEmpty(raiseTrigger);
+
+    /// <summary>
+    /// Clears any raise/lower trigger that hasn't been used yet. A trigger stays set until a transition consumes
+    /// it, so a leftover one would hijack the next animation (e.g. the normal cast).
+    /// </summary>
+    public void ClearHandTriggers()
+    {
+        if (handsAnimator == null) return;
+        if (!string.IsNullOrEmpty(raiseTrigger)) handsAnimator.ResetTrigger(raiseTrigger);
+        if (!string.IsNullOrEmpty(lowerTrigger)) handsAnimator.ResetTrigger(lowerTrigger);
+    }
 
     private void Awake()
     {
@@ -153,7 +169,7 @@ public class SpellMap : MonoBehaviour
             smudge = Mathf.MoveTowards(smudge, 1f, dt / Mathf.Max(smudgeDuration, 0.0001f));
         }
 
-        bool visible = (isOpen || smudge < 1f) && !MenuOptions.GamePaused;
+        bool visible = (isOpen || smudge < 1f) && !MenuOptions.GamePaused && !DeathScreen.IsShowing;
         image.enabled = visible;
         if (!visible) return;
 
@@ -176,7 +192,24 @@ public class SpellMap : MonoBehaviour
 
     private void FireTrigger(string trigger)
     {
-        if (handsAnimator != null && !string.IsNullOrEmpty(trigger)) handsAnimator.SetTrigger(trigger);
+        if (handsAnimator == null || string.IsNullOrEmpty(trigger)) return;
+        // Only one hands animation may be queued at a time, or they fight over which plays.
+        ClearHandTriggers();
+        if (otherHandTriggers != null)
+        {
+            foreach (string other in otherHandTriggers) ResetIfExists(other);
+        }
+        handsAnimator.SetTrigger(trigger);
+    }
+
+    // Skips names the animator doesn't have, so a different hands rig doesn't spam warnings.
+    private void ResetIfExists(string trigger)
+    {
+        if (string.IsNullOrEmpty(trigger)) return;
+        foreach (AnimatorControllerParameter parameter in handsAnimator.parameters)
+        {
+            if (parameter.name == trigger) { handsAnimator.ResetTrigger(trigger); return; }
+        }
     }
 
     private void PlayClip(AudioClip clip)

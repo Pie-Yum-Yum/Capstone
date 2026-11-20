@@ -112,10 +112,21 @@ public class PlayerCam : MonoBehaviour
         if (spellbookAudio != null) spellbookAudio.PlayClose();
     }
 
+    /// <summary>Closes the spellbook if it's open (used by the death screen).</summary>
+    public void ForceCloseBook()
+    {
+        if (!paused) return;
+        paused = false;
+        CloseBook();
+    }
+
     // Update is called once per frame
     void Update()
     {
         UpdateFlashlightIntensity();
+
+        // Dead: no looking around, and Esc/Tab mustn't "resume" past the death screen.
+        if (DeathScreen.InputBlocked) return;
 
         if((Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(settingsMenuKey)) && MenuOptions.GamePaused){
             // Settings menu is open: Esc or the menu key acts like its Resume button.

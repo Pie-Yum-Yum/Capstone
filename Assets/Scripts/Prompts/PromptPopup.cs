@@ -35,6 +35,7 @@ public class PromptPopup : MonoBehaviour
         public object source;
         public string text;
         public PromptPopup popup;
+        public float hideAt = -1f; // Time.time to hide itself at, or -1 to stay until Hide()
     }
 
     private static readonly List<Request> requests = new List<Request>();
@@ -126,6 +127,19 @@ public class PromptPopup : MonoBehaviour
         RefreshActive();
     }
 
+    /// <summary>
+    /// Shows text for a set time, then hides it automatically. For one-off messages (e.g. "Spell unlocked!")
+    /// whose source may be gone before the time is up. The timer pauses with the game.
+    /// </summary>
+    public void ShowFor(object source, string text, float seconds)
+    {
+        Show(source, text);
+        for (int i = 0; i < requests.Count; i++)
+        {
+            if (requests[i].source == source) { requests[i].hideAt = Time.time + Mathf.Max(seconds, 0f); break; }
+        }
+    }
+
     private void SetText(string text)
     {
         if (label != null && label.text != text)
@@ -158,8 +172,21 @@ public class PromptPopup : MonoBehaviour
 
     private void Update()
     {
+        // Timed messages on this popup that have run out.
+        bool expired = false;
+        for (int i = requests.Count - 1; i >= 0; i--)
+        {
+            Request request = requests[i];
+            if (request.popup == this && request.hideAt >= 0f && Time.time >= request.hideAt)
+            {
+                requests.RemoveAt(i);
+                expired = true;
+            }
+        }
+        if (expired) RefreshActive();
+
         // Hidden while the settings menu is open or popups are turned off.
-        bool visible = active != null && active.popup == this && PromptsEnabled && !MenuOptions.GamePaused;
+        bool visible = active != null && active.popup == this && PromptsEnabled && !MenuOptions.GamePaused && !DeathScreen.IsShowing;
 
         // Retype the text every time the popup reappears, not just when the text changes.
         if (visible && !wasVisible) RestartTyping();

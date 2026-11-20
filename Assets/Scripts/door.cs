@@ -186,7 +186,7 @@ public class door : MonoBehaviour, ICheckpointSaveable
         {
             HighlightDoor(glowColor, true);
 
-            if (Input.GetKeyDown(interactKey))
+            if (Input.GetKeyDown(interactKey) && !DeathScreen.InputBlocked)
             {
                 OpenDoorAwayFromObject(playerCamera);
             }
